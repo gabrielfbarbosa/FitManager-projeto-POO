@@ -1,0 +1,1 @@
+# FitManager projeto da disciplina LINGUAGEM DE PROGRAMAÇÃO ORIENTADA A OBJETOS-P01-2026-1
