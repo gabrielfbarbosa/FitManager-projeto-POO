@@ -5,7 +5,7 @@ import domain.model.Student;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -58,13 +58,8 @@ public class StudentService {
         }
 
         // Parse da data de nascimento
-        LocalDate birthDate;
-        try {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-            birthDate = LocalDate.parse(birthDateStr.trim(), formatter);
-        } catch (DateTimeParseException e) {
-            return new OperationResult(false, "Data de nascimento inválida. Use o formato dd/mm/aaaa.");
-        }
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        LocalDate birthDate = LocalDate.parse(birthDateStr.trim(), formatter);
 
         // Valida se a data não é futura
         if (birthDate.isAfter(LocalDate.now())) {

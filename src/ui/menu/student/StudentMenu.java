@@ -40,15 +40,10 @@ public class StudentMenu {
 
             if (input == null) { running = false; continue; }
 
-            MenuOption option;
-            try {
-                option = MenuOption.fromNumber(
-                        StudentMenuOption.values(),
-                        Integer.parseInt(input.trim())
-                );
-            } catch (NumberFormatException e) {
-                option = null;
-            }
+            MenuOption option = MenuOption.fromNumber(
+                    StudentMenuOption.values(),
+                    Integer.parseInt(input.trim())
+            );
 
             if (option == null) {
                 ui.showError("Opção inválida. Escolha de 1 a " + StudentMenuOption.values().length + ".");

@@ -69,16 +69,10 @@ public class UserInterface {
      * @param errorMessage mensagem exibida quando a conversão falha
      * @return o valor inteiro, ou Integer.MIN_VALUE se cancelou ou inválido
      */
-    public int getIntInput(String prompt, String errorMessage) {
+    public int getIntInput(String prompt) {
         String input = getInput(prompt);
         if (input == null) return Integer.MIN_VALUE;
-
-        try {
-            return Integer.parseInt(input.trim());
-        } catch (NumberFormatException e) {
-            showError(errorMessage);
-            return Integer.MIN_VALUE;
-        }
+        return Integer.parseInt(input.trim());
     }
 
     /**
@@ -92,13 +86,7 @@ public class UserInterface {
     public double getDoubleInput(String prompt) {
         String input = getInput(prompt);
         if (input == null) return Double.NaN;
-
-        try {
-            return Double.parseDouble(input.trim().replace(",", "."));
-        } catch (NumberFormatException e) {
-            showError("Valor inválido. Digite um valor numérico.");
-            return Double.NaN;
-        }
+        return Double.parseDouble(input.trim().replace(",", "."));
     }
 
     /**

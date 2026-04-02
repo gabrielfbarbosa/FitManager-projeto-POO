@@ -41,15 +41,10 @@ public class EnrollmentMenu {
 
             if (input == null) { running = false; continue; }
 
-            MenuOption option;
-            try {
-                option = MenuOption.fromNumber(
-                        EnrollmentMenuOption.values(),
-                        Integer.parseInt(input.trim())
-                );
-            } catch (NumberFormatException e) {
-                option = null;
-            }
+            MenuOption option = MenuOption.fromNumber(
+                    EnrollmentMenuOption.values(),
+                    Integer.parseInt(input.trim())
+            );
 
             if (option == null) {
                 ui.showError("Opção inválida. Escolha de 1 a "
@@ -87,7 +82,7 @@ public class EnrollmentMenu {
         String startDate = ui.getInput("Data de início (dd/mm/aaaa):");
         if (startDate == null) return;
 
-        int durationMonths = ui.getIntInput("Duração em meses:", "Duração inválida. Digite um número inteiro.");
+        int durationMonths = ui.getIntInput("Duração em meses:");
         if (durationMonths == Integer.MIN_VALUE) return;
 
         // Coleta os dados do pagamento inicial antes de qualquer processamento
@@ -258,13 +253,9 @@ public class EnrollmentMenu {
         String choice = ui.showMenu("Selecione o Tipo de Pagamento", options.toString());
         if (choice == null) return null;
 
-        try {
-            int index = Integer.parseInt(choice.trim()) - 1;
-            if (index >= 0 && index < types.length) {
-                return types[index];
-            }
-        } catch (NumberFormatException e) {
-            // Tratado abaixo
+        int index = Integer.parseInt(choice.trim()) - 1;
+        if (index >= 0 && index < types.length) {
+            return types[index];
         }
 
         ui.showError("Tipo de pagamento inválido. Escolha de 1 a " + types.length + ".");

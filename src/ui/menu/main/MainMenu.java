@@ -85,15 +85,10 @@ public class MainMenu {
                 continue;
             }
 
-            MenuOption option;
-            try {
-                option = MenuOption.fromNumber(
-                        MainMenuOption.values(),
-                        Integer.parseInt(input.trim())
-                );
-            } catch (NumberFormatException e) {
-                option = null;
-            }
+            MenuOption option = MenuOption.fromNumber(
+                    MainMenuOption.values(),
+                    Integer.parseInt(input.trim())
+            );
 
             if (option == null) {
                 ui.showError("Opção inválida. Escolha de 1 a " + MainMenuOption.values().length + ".");

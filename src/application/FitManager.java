@@ -10,7 +10,7 @@ import domain.model.Student;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
+
 
 /**
  * Ponto de entrada único para todas as operações do sistema.
@@ -187,14 +187,8 @@ public class FitManager {
         }
 
         // Converte a data de início
-        LocalDate startDate;
-        try {
-            startDate = LocalDate.parse(startDateStr.trim(),
-                    DateTimeFormatter.ofPattern("dd/MM/yyyy"));
-        } catch (DateTimeParseException e) {
-            return new OperationResult(false,
-                    "Data de início inválida. Use o formato dd/mm/aaaa.");
-        }
+        LocalDate startDate = LocalDate.parse(startDateStr.trim(),
+                DateTimeFormatter.ofPattern("dd/MM/yyyy"));
 
         // Delega ao EnrollmentService — cria Enrollment + Payment atomicamente
         return enrollmentService.enroll(student, plan, startDate, durationMonths,

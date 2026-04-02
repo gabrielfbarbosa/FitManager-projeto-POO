@@ -41,15 +41,10 @@ public class PlanMenu {
 
             if (input == null) { running = false; continue; }
 
-            MenuOption option;
-            try {
-                option = MenuOption.fromNumber(
-                        PlanMenuOption.values(),
-                        Integer.parseInt(input.trim())
-                );
-            } catch (NumberFormatException e) {
-                option = null;
-            }
+            MenuOption option = MenuOption.fromNumber(
+                    PlanMenuOption.values(),
+                    Integer.parseInt(input.trim())
+            );
 
             // Tratamento de opção inválida ANTES do switch — evita NullPointerException
             if (option == null) {
@@ -81,8 +76,7 @@ public class PlanMenu {
         PlanType type = selectPlanType();
         if (type == null) return;
 
-        int minimumDuration = ui.getIntInput("Digite a duração mínima em meses:",
-                "Duração inválida. Digite um número inteiro.");
+        int minimumDuration = ui.getIntInput("Digite a duração mínima em meses:");
         if (minimumDuration == Integer.MIN_VALUE) return;
 
         double pricePerMonth = ui.getDoubleInput("Digite o preço por mês (R$):");
@@ -115,13 +109,9 @@ public class PlanMenu {
         String choice = ui.showMenu("Selecione o Tipo do Plano", options.toString());
         if (choice == null) return null;
 
-        try {
-            int index = Integer.parseInt(choice.trim()) - 1;
-            if (index >= 0 && index < types.length) {
-                return types[index];
-            }
-        } catch (NumberFormatException e) {
-            // Tratado abaixo
+        int index = Integer.parseInt(choice.trim()) - 1;
+        if (index >= 0 && index < types.length) {
+            return types[index];
         }
 
         ui.showError("Tipo de plano inválido. Escolha de 1 a " + types.length + ".");
