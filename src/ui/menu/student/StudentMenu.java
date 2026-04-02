@@ -4,7 +4,7 @@ import application.FitManager;
 import application.OperationResult;
 import domain.model.Student;
 import ui.screen.UserInterface;
-import ui.menu.MenuOption;
+
 
 import java.util.List;
 
@@ -33,24 +33,22 @@ public class StudentMenu {
         boolean running = true;
 
         while (running) {
-            String input = ui.showMenu(
-                    "> GERENCIAR ALUNOS",
-                    StudentMenuOption.values()
-            );
+            StringBuilder sb = new StringBuilder();
+            for (StudentMenuOption opt : StudentMenuOption.values()) {
+                sb.append(opt.getNumber()).append(" - ").append(opt.getValorOpcao()).append("\n");
+            }
+            String input = ui.showMenu("> GERENCIAR ALUNOS", sb.toString());
 
             if (input == null) { running = false; continue; }
 
-            MenuOption option = MenuOption.fromNumber(
-                    StudentMenuOption.values(),
-                    Integer.parseInt(input.trim())
-            );
+            StudentMenuOption option = StudentMenuOption.fromNumber(Integer.parseInt(input.trim()));
 
             if (option == null) {
                 ui.showError("Opção inválida. Escolha de 1 a " + StudentMenuOption.values().length + ".");
                 continue;
             }
 
-            switch ((StudentMenuOption) option) {
+            switch (option) {
                 case CADASTRAR:    registerStudent();   break;
                 case CONSULTAR_CPF: findStudentByCpf(); break;
                 case EDITAR:       editStudent();        break;

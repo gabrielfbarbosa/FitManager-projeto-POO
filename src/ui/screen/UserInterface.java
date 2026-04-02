@@ -1,6 +1,5 @@
 package ui.screen;
 
-import ui.menu.MenuOption;
 
 import javax.swing.JOptionPane;
 
@@ -33,14 +32,6 @@ public class UserInterface {
                 title + " — " + APP_TITLE,
                 JOptionPane.QUESTION_MESSAGE
         );
-    }
-
-    public String showMenu(String title, MenuOption[] options) {
-        StringBuilder sb = new StringBuilder();
-        for (MenuOption opt : options) {
-            sb.append(opt.getNumber()).append(" - ").append(opt.getValorOpcao()).append("\n");
-        }
-        return JOptionPane.showInputDialog(null, sb.toString(), title, JOptionPane.PLAIN_MESSAGE);
     }
 
     /**

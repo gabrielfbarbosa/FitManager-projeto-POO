@@ -1,8 +1,6 @@
 package ui.menu.main;
 
-import ui.menu.MenuOption;
-
-public enum MainMenuOption implements MenuOption {
+public enum MainMenuOption {
     GERENCIAR_ALUNOS(1, "Gerenciar alunos"),
     GERENCIAR_PLANOS(2, "Gerenciar planos"),
     GERENCIAR_MATRICULAS(3, "Gerenciar matrículas"),
@@ -17,6 +15,15 @@ public enum MainMenuOption implements MenuOption {
         this.valorOpcao = valorOpcao;
     }
 
-    @Override public int getNumber() { return numero; }
-    @Override public String getValorOpcao() { return valorOpcao; }
+    public int getNumber() { return numero; }
+    public String getValorOpcao() { return valorOpcao; }
+
+    public static MainMenuOption fromNumber(int numero) {
+        for (MainMenuOption option : values()) {
+            if (option.getNumber() == numero) {
+                return option;
+            }
+        }
+        return null;
+    }
 }

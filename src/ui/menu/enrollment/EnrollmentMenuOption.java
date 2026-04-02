@@ -1,8 +1,6 @@
 package ui.menu.enrollment;
 
-import ui.menu.MenuOption;
-
-public enum EnrollmentMenuOption implements MenuOption {
+public enum EnrollmentMenuOption {
     REALIZAR_MATRICULA(1, "Realizar matrícula"),
     REGISTRAR_PAGAMENTO(2, "Registrar pagamento"),
     CANCELAR_MATRICULA(3, "Cancelar matrícula"),
@@ -18,6 +16,15 @@ public enum EnrollmentMenuOption implements MenuOption {
         this.valorOpcao = valorOpcao;
     }
 
-    @Override public int getNumber() { return numero; }
-    @Override public String getValorOpcao() { return valorOpcao; }
+    public int getNumber() { return numero; }
+    public String getValorOpcao() { return valorOpcao; }
+
+    public static EnrollmentMenuOption fromNumber(int numero) {
+        for (EnrollmentMenuOption option : values()) {
+            if (option.getNumber() == numero) {
+                return option;
+            }
+        }
+        return null;
+    }
 }

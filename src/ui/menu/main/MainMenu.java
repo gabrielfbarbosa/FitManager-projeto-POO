@@ -5,7 +5,7 @@ import ui.menu.plan.PlanMenu;
 import ui.menu.reports.ReportsMenu;
 import ui.menu.student.StudentMenu;
 import ui.screen.UserInterface;
-import ui.menu.MenuOption;
+
 import ui.menu.enrollment.EnrollmentMenu;
 
 /**
@@ -75,27 +75,25 @@ public class MainMenu {
         boolean running = true;
 
         while (running) {
-            String input = ui.showMenu(
-                    "> FITMANAGER",
-                    MainMenuOption.values()
-            );
+            StringBuilder sb = new StringBuilder();
+            for (MainMenuOption opt : MainMenuOption.values()) {
+                sb.append(opt.getNumber()).append(" - ").append(opt.getValorOpcao()).append("\n");
+            }
+            String input = ui.showMenu("> FITMANAGER", sb.toString());
 
             if (input == null) {
                 running = false;
                 continue;
             }
 
-            MenuOption option = MenuOption.fromNumber(
-                    MainMenuOption.values(),
-                    Integer.parseInt(input.trim())
-            );
+            MainMenuOption option = MainMenuOption.fromNumber(Integer.parseInt(input.trim()));
 
             if (option == null) {
                 ui.showError("Opção inválida. Escolha de 1 a " + MainMenuOption.values().length + ".");
                 continue;
             }
 
-            switch ((MainMenuOption) option) {
+            switch (option) {
                 case GERENCIAR_ALUNOS:     getStudentMenu().run();    break;
                 case GERENCIAR_PLANOS:     getPlanMenu().run();       break;
                 case GERENCIAR_MATRICULAS: getEnrollmentMenu().run(); break;

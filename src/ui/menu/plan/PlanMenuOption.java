@@ -1,8 +1,6 @@
 package ui.menu.plan;
 
-import ui.menu.MenuOption;
-
-public enum PlanMenuOption implements MenuOption {
+public enum PlanMenuOption {
     CADASTRAR(1, "Cadastrar novo plano"),
     CONSULTAR_NOME(2, "Consultar por nome"),
     ALTERAR_PRECO(3, "Alterar preço"),
@@ -17,6 +15,15 @@ public enum PlanMenuOption implements MenuOption {
         this.valorOpcao = valorOpcao;
     }
 
-    @Override public int getNumber() { return numero; }
-    @Override public String getValorOpcao() { return valorOpcao; }
+    public int getNumber() { return numero; }
+    public String getValorOpcao() { return valorOpcao; }
+
+    public static PlanMenuOption fromNumber(int numero) {
+        for (PlanMenuOption option : values()) {
+            if (option.getNumber() == numero) {
+                return option;
+            }
+        }
+        return null;
+    }
 }

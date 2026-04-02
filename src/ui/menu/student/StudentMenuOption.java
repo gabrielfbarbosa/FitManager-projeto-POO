@@ -1,8 +1,6 @@
 package ui.menu.student;
 
-import ui.menu.MenuOption;
-
-public enum StudentMenuOption implements MenuOption {
+public enum StudentMenuOption {
     CADASTRAR(1, "Cadastrar novo aluno"),
     CONSULTAR_CPF(2, "Consultar por CPF"),
     EDITAR(3, "Editar cadastro"),
@@ -18,6 +16,15 @@ public enum StudentMenuOption implements MenuOption {
         this.valorOpcao = valorOpcao;
     }
 
-    @Override public int getNumber() { return numero; }
-    @Override public String getValorOpcao() { return valorOpcao; }
+    public int getNumber() { return numero; }
+    public String getValorOpcao() { return valorOpcao; }
+
+    public static StudentMenuOption fromNumber(int numero) {
+        for (StudentMenuOption option : values()) {
+            if (option.getNumber() == numero) {
+                return option;
+            }
+        }
+        return null;
+    }
 }

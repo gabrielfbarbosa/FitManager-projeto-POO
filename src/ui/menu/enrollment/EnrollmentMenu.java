@@ -5,7 +5,7 @@ import application.OperationResult;
 import domain.enums.PaymentType;
 import domain.model.Enrollment;
 import domain.model.Payment;
-import ui.menu.MenuOption;
+
 import ui.screen.UserInterface;
 
 import java.util.List;
@@ -34,17 +34,15 @@ public class EnrollmentMenu {
         boolean running = true;
 
         while (running) {
-            String input = ui.showMenu(
-                    "> GERENCIAR MATRÍCULAS",
-                    EnrollmentMenuOption.values()
-            );
+            StringBuilder sb = new StringBuilder();
+            for (EnrollmentMenuOption opt : EnrollmentMenuOption.values()) {
+                sb.append(opt.getNumber()).append(" - ").append(opt.getValorOpcao()).append("\n");
+            }
+            String input = ui.showMenu("> GERENCIAR MATRÍCULAS", sb.toString());
 
             if (input == null) { running = false; continue; }
 
-            MenuOption option = MenuOption.fromNumber(
-                    EnrollmentMenuOption.values(),
-                    Integer.parseInt(input.trim())
-            );
+            EnrollmentMenuOption option = EnrollmentMenuOption.fromNumber(Integer.parseInt(input.trim()));
 
             if (option == null) {
                 ui.showError("Opção inválida. Escolha de 1 a "
@@ -52,7 +50,7 @@ public class EnrollmentMenu {
                 continue;
             }
 
-            switch ((EnrollmentMenuOption) option) {
+            switch (option) {
                 case REALIZAR_MATRICULA:   enrollStudent();        break;
                 case REGISTRAR_PAGAMENTO:  registerPayment();      break;
                 case CANCELAR_MATRICULA:   cancelEnrollment();     break;

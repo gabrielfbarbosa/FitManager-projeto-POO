@@ -1,8 +1,6 @@
 package ui.menu.reports;
 
-import ui.menu.MenuOption;
-
-public enum ReportsMenuOption implements MenuOption {
+public enum ReportsMenuOption {
     ALUNOS_ATIVOS(1, "Alunos com matrícula ativa"),
     SALDO_PENDENTE(2, "Matrículas com saldo pendente"),
     TODAS_MATRICULAS(3, "Todas as matrículas"),
@@ -16,6 +14,15 @@ public enum ReportsMenuOption implements MenuOption {
         this.valorOpcao = valorOpcao;
     }
 
-    @Override public int getNumber() { return numero; }
-    @Override public String getValorOpcao() { return valorOpcao; }
+    public int getNumber() { return numero; }
+    public String getValorOpcao() { return valorOpcao; }
+
+    public static ReportsMenuOption fromNumber(int numero) {
+        for (ReportsMenuOption option : values()) {
+            if (option.getNumber() == numero) {
+                return option;
+            }
+        }
+        return null;
+    }
 }

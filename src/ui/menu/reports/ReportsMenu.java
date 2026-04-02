@@ -4,7 +4,7 @@ import application.FitManager;
 import application.OperationResult;
 import domain.model.Enrollment;
 import domain.model.Student;
-import ui.menu.MenuOption;
+
 import ui.screen.UserInterface;
 
 import java.util.List;
@@ -35,17 +35,15 @@ public class ReportsMenu {
         boolean running = true;
 
         while (running) {
-            String input = ui.showMenu(
-                    "> RELATÓRIOS",
-                    ReportsMenuOption.values()
-            );
+            StringBuilder sb = new StringBuilder();
+            for (ReportsMenuOption opt : ReportsMenuOption.values()) {
+                sb.append(opt.getNumber()).append(" - ").append(opt.getValorOpcao()).append("\n");
+            }
+            String input = ui.showMenu("> RELATÓRIOS", sb.toString());
 
             if (input == null) { running = false; continue; }
 
-            MenuOption option = MenuOption.fromNumber(
-                    ReportsMenuOption.values(),
-                    Integer.parseInt(input.trim())
-            );
+            ReportsMenuOption option = ReportsMenuOption.fromNumber(Integer.parseInt(input.trim()));
 
             if (option == null) {
                 ui.showError("Opção inválida. Escolha de 1 a "
@@ -53,7 +51,7 @@ public class ReportsMenu {
                 continue;
             }
 
-            switch ((ReportsMenuOption) option) {
+            switch (option) {
                 case ALUNOS_ATIVOS:    reportStudentsWithActiveEnrollment(); break;
                 case SALDO_PENDENTE:   reportPendingBalance();               break;
                 case TODAS_MATRICULAS: reportAllEnrollments();               break;

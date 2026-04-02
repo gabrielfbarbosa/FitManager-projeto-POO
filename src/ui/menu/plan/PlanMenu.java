@@ -4,7 +4,7 @@ import application.FitManager;
 import application.OperationResult;
 import domain.enums.PlanType;
 import domain.model.Plan;
-import ui.menu.MenuOption;
+
 import ui.screen.UserInterface;
 
 import java.util.List;
@@ -34,25 +34,22 @@ public class PlanMenu {
         boolean running = true;
 
         while (running) {
-            String input = ui.showMenu(
-                    "> GERENCIAR PLANOS",
-                    PlanMenuOption.values()
-            );
+            StringBuilder sb = new StringBuilder();
+            for (PlanMenuOption opt : PlanMenuOption.values()) {
+                sb.append(opt.getNumber()).append(" - ").append(opt.getValorOpcao()).append("\n");
+            }
+            String input = ui.showMenu("> GERENCIAR PLANOS", sb.toString());
 
             if (input == null) { running = false; continue; }
 
-            MenuOption option = MenuOption.fromNumber(
-                    PlanMenuOption.values(),
-                    Integer.parseInt(input.trim())
-            );
+            PlanMenuOption option = PlanMenuOption.fromNumber(Integer.parseInt(input.trim()));
 
-            // Tratamento de opção inválida ANTES do switch — evita NullPointerException
             if (option == null) {
                 ui.showError("Opção inválida. Escolha de 1 a " + PlanMenuOption.values().length + ".");
                 continue;
             }
 
-            switch ((PlanMenuOption) option) {
+            switch (option) {
                 case CADASTRAR:      registerPlan();     break;
                 case CONSULTAR_NOME: findPlanByName();   break;
                 case ALTERAR_PRECO:  updatePrice();      break;
