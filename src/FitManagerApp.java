@@ -1,6 +1,7 @@
+import application.DataMock;
 import application.FitManager;
 import ui.menu.main.MainMenu;
-import ui.screen.UserScreen;
+import ui.screen.UserInterface;
 
 /**
  * Ponto de entrada do sistema FitManager.
@@ -9,10 +10,18 @@ import ui.screen.UserScreen;
  * o loop do menu principal.
  */
 public class FitManagerApp {
+
+    private static final boolean DEV_MODE = true;
+
     public static void main(String[] args) {
         // Instancia os componentes principais
-        UserScreen ui = new UserScreen();
+        UserInterface ui = new UserInterface();
         FitManager fitManager = new FitManager();
+
+        if (DEV_MODE) {
+            DataMock.mock(fitManager);
+        }
+
         MainMenu mainMenu = new MainMenu(ui, fitManager);
 
         // Inicia o sistema

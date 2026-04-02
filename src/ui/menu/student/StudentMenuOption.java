@@ -1,4 +1,4 @@
-package ui.menu.sudent;
+package ui.menu.student;
 
 import ui.menu.MenuOption;
 

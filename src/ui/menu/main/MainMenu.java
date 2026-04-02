@@ -3,8 +3,8 @@ package ui.menu.main;
 import application.FitManager;
 import ui.menu.plan.PlanMenu;
 import ui.menu.reports.ReportsMenu;
-import ui.menu.sudent.StudentMenu;
-import ui.screen.UserScreen;
+import ui.menu.student.StudentMenu;
+import ui.screen.UserInterface;
 import ui.menu.MenuOption;
 import ui.menu.enrollment.EnrollmentMenu;
 
@@ -21,7 +21,7 @@ import ui.menu.enrollment.EnrollmentMenu;
  */
 public class MainMenu {
 
-    private UserScreen ui;
+    private UserInterface ui;
     private FitManager fitManager;
 
     // Submenus — lazy instantiation
@@ -30,7 +30,7 @@ public class MainMenu {
     private EnrollmentMenu enrollmentMenu;
     private ReportsMenu reportsMenu;
 
-    public MainMenu(UserScreen ui, FitManager fitManager) {
+    public MainMenu(UserInterface ui, FitManager fitManager) {
         this.ui = ui;
         this.fitManager = fitManager;
     }
@@ -76,7 +76,7 @@ public class MainMenu {
 
         while (running) {
             String input = ui.showMenu(
-                    "=== FITMANAGER ===",
+                    "> FITMANAGER",
                     MainMenuOption.values()
             );
 
@@ -85,10 +85,10 @@ public class MainMenu {
                 continue;
             }
 
-            MainMenuOption option;
+            MenuOption option;
             try {
-                option = MenuOption.fromNumero(
-                        MainMenuOption.class,
+                option = MenuOption.fromNumber(
+                        MainMenuOption.values(),
                         Integer.parseInt(input.trim())
                 );
             } catch (NumberFormatException e) {
@@ -100,7 +100,7 @@ public class MainMenu {
                 continue;
             }
 
-            switch (option) {
+            switch ((MainMenuOption) option) {
                 case GERENCIAR_ALUNOS:     getStudentMenu().run();    break;
                 case GERENCIAR_PLANOS:     getPlanMenu().run();       break;
                 case GERENCIAR_MATRICULAS: getEnrollmentMenu().run(); break;

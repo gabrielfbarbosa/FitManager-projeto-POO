@@ -1,9 +1,9 @@
-package ui.menu.sudent;
+package ui.menu.student;
 
 import application.FitManager;
 import application.OperationResult;
 import domain.model.Student;
-import ui.screen.UserScreen;
+import ui.screen.UserInterface;
 import ui.menu.MenuOption;
 
 import java.util.List;
@@ -17,10 +17,10 @@ import java.util.List;
  */
 public class StudentMenu {
 
-    private UserScreen ui;
+    private UserInterface ui;
     private FitManager fitManager;
 
-    public StudentMenu(UserScreen ui, FitManager fitManager) {
+    public StudentMenu(UserInterface ui, FitManager fitManager) {
         this.ui = ui;
         this.fitManager = fitManager;
     }
@@ -34,15 +34,18 @@ public class StudentMenu {
 
         while (running) {
             String input = ui.showMenu(
-                    "==== GERENCIAR ALUNOS ====",
+                    "> GERENCIAR ALUNOS",
                     StudentMenuOption.values()
             );
 
             if (input == null) { running = false; continue; }
 
-            StudentMenuOption option;
+            MenuOption option;
             try {
-                option = MenuOption.fromNumero(StudentMenuOption.class, Integer.parseInt(input.trim()));
+                option = MenuOption.fromNumber(
+                        StudentMenuOption.values(),
+                        Integer.parseInt(input.trim())
+                );
             } catch (NumberFormatException e) {
                 option = null;
             }
@@ -52,7 +55,7 @@ public class StudentMenu {
                 continue;
             }
 
-            switch (option) {
+            switch ((StudentMenuOption) option) {
                 case CADASTRAR:    registerStudent();   break;
                 case CONSULTAR_CPF: findStudentByCpf(); break;
                 case EDITAR:       editStudent();        break;

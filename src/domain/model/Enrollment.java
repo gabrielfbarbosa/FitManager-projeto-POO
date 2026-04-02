@@ -70,8 +70,12 @@ public class Enrollment {
     /**
      * Cancela a matrícula alterando seu status.
      */
-    public void cancel() {
+    public boolean cancel() {
+        if (this.status == EnrollmentStatus.CANCELLED) {
+            return false; // já cancelada, operação ignorada
+        }
         this.status = EnrollmentStatus.CANCELLED;
+        return true;
     }
 
     // ========================
@@ -111,7 +115,7 @@ public class Enrollment {
     }
 
     public List<Payment> getPayments() {
-        return payments;
+        return new ArrayList<>(payments); // cópia — ninguém modifica a lista interna
     }
 
     @Override

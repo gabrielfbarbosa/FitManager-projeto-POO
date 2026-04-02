@@ -8,9 +8,9 @@ public interface MenuOption {
      * Busca a constante do enum pelo número digitado pelo usuário.
      * Retorna null se nenhuma constante corresponder.
      */
-    static <T extends Enum<T> & MenuOption> T fromNumero(Class<T> enumClass, int number) {
-        for (T option : enumClass.getEnumConstants()) {
-            if (option.getNumber() == number) {
+    static MenuOption fromNumber(MenuOption[] options, int numero) {
+        for (MenuOption option : options) {
+            if (option.getNumber() == numero) {
                 return option;
             }
         }

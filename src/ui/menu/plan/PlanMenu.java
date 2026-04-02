@@ -4,7 +4,8 @@ import application.FitManager;
 import application.OperationResult;
 import domain.enums.PlanType;
 import domain.model.Plan;
-import ui.screen.UserScreen;
+import ui.menu.MenuOption;
+import ui.screen.UserInterface;
 
 import java.util.List;
 
@@ -17,10 +18,10 @@ import java.util.List;
  */
 public class PlanMenu {
 
-    private UserScreen ui;
+    private UserInterface ui;
     private FitManager fitManager;
 
-    public PlanMenu(UserScreen ui, FitManager fitManager) {
+    public PlanMenu(UserInterface ui, FitManager fitManager) {
         this.ui = ui;
         this.fitManager = fitManager;
     }
@@ -33,21 +34,35 @@ public class PlanMenu {
         boolean running = true;
 
         while (running) {
-            String option = ui.showMenu(
-                    "=== GERENCIAR PLANOS ===",
+            String input = ui.showMenu(
+                    "> GERENCIAR PLANOS",
                     PlanMenuOption.values()
             );
 
-            if (option == null) { running = false; continue; }
+            if (input == null) { running = false; continue; }
 
-            switch (option.trim()) {
-                case "1": registerPlan(); break;
-                case "2": findPlanByName(); break;
-                case "3": updatePrice(); break;
-                case "4": listAllPlans(); break;
-                case "5": running = false; break;
-                default: ui.showError("Opção inválida. Escolha de 1 a "
-                        + PlanMenuOption.values().length + ".");
+            MenuOption option;
+            try {
+                option = MenuOption.fromNumber(
+                        PlanMenuOption.values(),
+                        Integer.parseInt(input.trim())
+                );
+            } catch (NumberFormatException e) {
+                option = null;
+            }
+
+            // Tratamento de opção inválida ANTES do switch — evita NullPointerException
+            if (option == null) {
+                ui.showError("Opção inválida. Escolha de 1 a " + PlanMenuOption.values().length + ".");
+                continue;
+            }
+
+            switch ((PlanMenuOption) option) {
+                case CADASTRAR:      registerPlan();     break;
+                case CONSULTAR_NOME: findPlanByName();   break;
+                case ALTERAR_PRECO:  updatePrice();      break;
+                case LISTAR:         listAllPlans();      break;
+                case VOLTAR:         running = false;    break;
             }
         }
     }
@@ -63,35 +78,18 @@ public class PlanMenu {
         String description = ui.getInput("Digite a descrição do plano:");
         if (description == null) return;
 
-        // Seleção do tipo de plano
         PlanType type = selectPlanType();
         if (type == null) return;
 
-        // Duração mínima
-        String durationStr = ui.getInput("Digite a duração mínima em meses:");
-        if (durationStr == null) return;
+        int minimumDuration = ui.getIntInput("Digite a duração mínima em meses:",
+                "Duração inválida. Digite um número inteiro.");
+        if (minimumDuration == Integer.MIN_VALUE) return;
 
-        int minimumDuration;
-        try {
-            minimumDuration = Integer.parseInt(durationStr.trim());
-        } catch (NumberFormatException e) {
-            ui.showError("Duração inválida. Digite um número inteiro.");
-            return;
-        }
+        double pricePerMonth = ui.getDoubleInput("Digite o preço por mês (R$):");
+        if (Double.isNaN(pricePerMonth)) return;
 
-        // Preço por mês
-        String priceStr = ui.getInput("Digite o preço por mês (R$):");
-        if (priceStr == null) return;
-
-        double pricePerMonth;
-        try {
-            pricePerMonth = Double.parseDouble(priceStr.trim().replace(",", "."));
-        } catch (NumberFormatException e) {
-            ui.showError("Preço inválido. Digite um valor numérico.");
-            return;
-        }
-
-        OperationResult result = fitManager.registerPlan(name, description, type, minimumDuration, pricePerMonth);
+        OperationResult result = fitManager.registerPlan(
+                name, description, type, minimumDuration, pricePerMonth);
 
         if (result.isSuccess()) {
             Plan plan = (Plan) result.getData();
@@ -103,17 +101,18 @@ public class PlanMenu {
 
     /**
      * Exibe menu para seleção do tipo de plano (PlanType).
+     * Os valores do enum são exibidos numerados — mapeamento robusto e sem strings literais.
      *
-     * @return PlanType selecionado, ou null se cancelou
+     * @return PlanType selecionado, ou null se cancelou ou entrada inválida
      */
     private PlanType selectPlanType() {
-        StringBuilder options = new StringBuilder();
         PlanType[] types = PlanType.values();
+        StringBuilder options = new StringBuilder();
         for (int i = 0; i < types.length; i++) {
-            options.append((i + 1)).append(" - ").append(types[i].getLabel()).append("\n");
+            options.append(i + 1).append(" - ").append(types[i].getLabel()).append("\n");
         }
 
-        String choice = ui.showMenu("Tipo do Plano", options.toString());
+        String choice = ui.showMenu("Selecione o Tipo do Plano", options.toString());
         if (choice == null) return null;
 
         try {
@@ -122,10 +121,10 @@ public class PlanMenu {
                 return types[index];
             }
         } catch (NumberFormatException e) {
-            // Ignora — será tratado abaixo
+            // Tratado abaixo
         }
 
-        ui.showError("Tipo de plano inválido.");
+        ui.showError("Tipo de plano inválido. Escolha de 1 a " + types.length + ".");
         return null;
     }
 
@@ -148,12 +147,12 @@ public class PlanMenu {
 
     /**
      * Fluxo de alteração de preço de um plano.
+     * Exibe os dados atuais antes de solicitar o novo valor.
      */
     private void updatePrice() {
         String name = ui.getInput("Digite o nome do plano para alterar o preço:");
         if (name == null) return;
 
-        // Primeiro verifica se o plano existe
         OperationResult findResult = fitManager.findPlanByName(name);
         if (!findResult.isSuccess()) {
             ui.showError(findResult.getMessage());
@@ -161,20 +160,11 @@ public class PlanMenu {
         }
 
         Plan currentPlan = (Plan) findResult.getData();
-        ui.showMessage("Plano encontrado:\n\n" + currentPlan.toString());
+        ui.showMessage("Plano: " + currentPlan.getName()
+                + "\nPreço atual: R$ " + String.format("%.2f", currentPlan.getPricePerMonth()));
 
-        String newPriceStr = ui.getInput(
-                "Preço atual: R$ " + String.format("%.2f", currentPlan.getPricePerMonth()) +
-                "\n\nDigite o novo preço por mês (R$):");
-        if (newPriceStr == null) return;
-
-        double newPrice;
-        try {
-            newPrice = Double.parseDouble(newPriceStr.trim().replace(",", "."));
-        } catch (NumberFormatException e) {
-            ui.showError("Preço inválido. Digite um valor numérico.");
-            return;
-        }
+        double newPrice = ui.getDoubleInput("Digite o novo preço por mês (R$):");
+        if (Double.isNaN(newPrice)) return;
 
         OperationResult result = fitManager.updatePlanPrice(name, newPrice);
 
@@ -205,9 +195,7 @@ public class PlanMenu {
         for (int i = 0; i < plans.size(); i++) {
             sb.append("--- Plano ").append(i + 1).append(" ---\n");
             sb.append(plans.get(i).toString());
-            if (i < plans.size() - 1) {
-                sb.append("\n\n");
-            }
+            if (i < plans.size() - 1) sb.append("\n\n");
         }
 
         ui.showMessage(sb.toString());

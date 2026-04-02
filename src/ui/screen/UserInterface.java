@@ -14,7 +14,7 @@ import javax.swing.JOptionPane;
  * Qualquer mudança na forma de exibição afeta apenas esta classe,
  * sem impactar o restante do sistema.
  */
-public class UserScreen {
+public class UserInterface {
 
     private static final String APP_TITLE = "FitManager";
 
@@ -58,6 +58,47 @@ public class UserScreen {
                 JOptionPane.QUESTION_MESSAGE
         );
         return input;
+    }
+
+    /**
+     * Solicita e converte uma entrada inteira do usuário.
+     * Exibe mensagem de erro e retorna Integer.MIN_VALUE se a entrada for
+     * cancelada ou não numérica.
+     *
+     * @param prompt       texto do prompt exibido
+     * @param errorMessage mensagem exibida quando a conversão falha
+     * @return o valor inteiro, ou Integer.MIN_VALUE se cancelou ou inválido
+     */
+    public int getIntInput(String prompt, String errorMessage) {
+        String input = getInput(prompt);
+        if (input == null) return Integer.MIN_VALUE;
+
+        try {
+            return Integer.parseInt(input.trim());
+        } catch (NumberFormatException e) {
+            showError(errorMessage);
+            return Integer.MIN_VALUE;
+        }
+    }
+
+    /**
+     * Solicita e converte uma entrada decimal do usuário.
+     * Aceita vírgula como separador decimal (substitui por ponto antes da conversão).
+     * Exibe mensagem de erro e retorna Double.NaN se a entrada for cancelada ou inválida.
+     *
+     * @param prompt texto do prompt exibido
+     * @return o valor decimal, ou Double.NaN se cancelou ou inválido
+     */
+    public double getDoubleInput(String prompt) {
+        String input = getInput(prompt);
+        if (input == null) return Double.NaN;
+
+        try {
+            return Double.parseDouble(input.trim().replace(",", "."));
+        } catch (NumberFormatException e) {
+            showError("Valor inválido. Digite um valor numérico.");
+            return Double.NaN;
+        }
     }
 
     /**
