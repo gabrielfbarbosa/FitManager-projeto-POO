@@ -1,4 +1,4 @@
-package ui.menu.plan;
+package ui.menus.plan;
 
 public enum PlanMenuOption {
     CADASTRAR(1, "Cadastrar novo plano"),

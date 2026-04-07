@@ -1,4 +1,4 @@
-package ui.menu.student;
+package ui.menus.student;
 
 public enum StudentMenuOption {
     CADASTRAR(1, "Cadastrar novo aluno"),

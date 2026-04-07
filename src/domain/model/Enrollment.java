@@ -4,7 +4,6 @@ import domain.enums.EnrollmentStatus;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.List;
 
 public class Enrollment {
 
@@ -16,7 +15,7 @@ public class Enrollment {
     private int durationMonths;
     private double totalPrice;
     private EnrollmentStatus status;
-    private List<Payment> payments;
+    private ArrayList<Payment> payments;
 
     public Enrollment(String code, Student student, Plan plan, LocalDate startDate, int durationMonths) {
         this.code = code;
@@ -114,7 +113,7 @@ public class Enrollment {
         return status;
     }
 
-    public List<Payment> getPayments() {
+    public ArrayList<Payment> getPayments() {
         return new ArrayList<>(payments); // cópia — ninguém modifica a lista interna
     }
 

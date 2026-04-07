@@ -1,4 +1,4 @@
-package ui.menu.reports;
+package ui.menus.reports;
 
 public enum ReportsMenuOption {
     ALUNOS_ATIVOS(1, "Alunos com matrícula ativa"),

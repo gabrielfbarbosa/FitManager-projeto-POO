@@ -1,4 +1,4 @@
-package ui.menu.main;
+package ui.menus.main;
 
 public enum MainMenuOption {
     GERENCIAR_ALUNOS(1, "Gerenciar alunos"),
@@ -8,15 +8,15 @@ public enum MainMenuOption {
     SAIR(5, "Sair");
 
     private final int numero;
-    private final String valorOpcao;
+    private final String optionName;
 
-    MainMenuOption(int numero, String valorOpcao) {
+    MainMenuOption(int numero, String optionName) {
         this.numero = numero;
-        this.valorOpcao = valorOpcao;
+        this.optionName = optionName;
     }
 
     public int getNumber() { return numero; }
-    public String getValorOpcao() { return valorOpcao; }
+    public String getOptionName() { return optionName; }
 
     public static MainMenuOption fromNumber(int numero) {
         for (MainMenuOption option : values()) {

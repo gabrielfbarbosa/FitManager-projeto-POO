@@ -1,12 +1,12 @@
-package ui.menu.main;
+package ui.menus.main;
 
 import application.FitManager;
-import ui.menu.plan.PlanMenu;
-import ui.menu.reports.ReportsMenu;
-import ui.menu.student.StudentMenu;
+import ui.menus.plan.PlanMenu;
+import ui.menus.reports.ReportsMenu;
+import ui.menus.student.StudentMenu;
 import ui.screen.UserInterface;
 
-import ui.menu.enrollment.EnrollmentMenu;
+import ui.menus.enrollment.EnrollmentMenu;
 
 /**
  * Menu principal do sistema FitManager.
@@ -75,11 +75,11 @@ public class MainMenu {
         boolean running = true;
 
         while (running) {
-            StringBuilder sb = new StringBuilder();
+            String menuOptions = "";
             for (MainMenuOption opt : MainMenuOption.values()) {
-                sb.append(opt.getNumber()).append(" - ").append(opt.getValorOpcao()).append("\n");
+                menuOptions += opt.getNumber() + " - " + opt.getOptionName() + "\n";
             }
-            String input = ui.showMenu("> FITMANAGER", sb.toString());
+            String input = ui.showMenu("", menuOptions);
 
             if (input == null) {
                 running = false;

@@ -1,4 +1,4 @@
-package ui.menu.student;
+package ui.menus.student;
 
 import application.FitManager;
 import application.OperationResult;
@@ -6,7 +6,7 @@ import domain.model.Student;
 import ui.screen.UserInterface;
 
 
-import java.util.List;
+import java.util.ArrayList;
 
 /**
  * Menu de gerenciamento de alunos.
@@ -33,11 +33,11 @@ public class StudentMenu {
         boolean running = true;
 
         while (running) {
-            StringBuilder sb = new StringBuilder();
+            String menuOptions = "";
             for (StudentMenuOption opt : StudentMenuOption.values()) {
-                sb.append(opt.getNumber()).append(" - ").append(opt.getValorOpcao()).append("\n");
+                menuOptions += opt.getNumber() + " - " + opt.getValorOpcao() + "\n";
             }
-            String input = ui.showMenu("> GERENCIAR ALUNOS", sb.toString());
+            String input = ui.showMenu("> GERENCIAR ALUNOS", menuOptions);
 
             if (input == null) { running = false; continue; }
 
@@ -174,7 +174,6 @@ public class StudentMenu {
     /**
      * Fluxo de listagem de todos os alunos ativos.
      */
-    @SuppressWarnings("unchecked")
     private void listAllStudents() {
         OperationResult result = fitManager.listAllStudents();
 
@@ -183,19 +182,18 @@ public class StudentMenu {
             return;
         }
 
-        List<Student> students = (List<Student>) result.getData();
-        StringBuilder sb = new StringBuilder();
-        sb.append("======== ALUNOS CADASTRADOS ========\n");
-        sb.append("Total: ").append(students.size()).append(" aluno(s)\n\n");
+        ArrayList<Student> students = (ArrayList<Student>) result.getData();
+        String message = "> ALUNOS CADASTRADOS \n";
+        message += "Total: " + students.size() + " aluno(s)\n\n";
 
         for (int i = 0; i < students.size(); i++) {
-            sb.append("--- Aluno ").append(i + 1).append(" ---\n");
-            sb.append(students.get(i).toString());
+            message += "--- Aluno " + (i + 1) + " ---\n";
+            message += students.get(i).toString();
             if (i < students.size() - 1) {
-                sb.append("\n\n");
+                message += "\n\n";
             }
         }
 
-        ui.showMessage(sb.toString());
+        ui.showMessage(message);
     }
 }

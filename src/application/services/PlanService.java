@@ -5,7 +5,6 @@ import domain.enums.PlanType;
 import domain.model.Plan;
 
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Serviço responsável por manter a coleção de planos em memória
@@ -15,7 +14,7 @@ import java.util.List;
  */
 public class PlanService {
 
-    private List<Plan> plans;
+    private ArrayList<Plan> plans;
 
     public PlanService() {
         this.plans = new ArrayList<>();
@@ -111,7 +110,7 @@ public class PlanService {
     /**
      * Lista todos os planos cadastrados.
      *
-     * @return OperationResult com List<Plan> em data
+     * @return OperationResult com ArrayList<Plan> em data
      */
     public OperationResult listAll() {
         if (plans.isEmpty()) {

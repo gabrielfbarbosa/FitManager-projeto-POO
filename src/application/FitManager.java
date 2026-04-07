@@ -266,8 +266,8 @@ public class FitManager {
             return allStudents;
         }
 
-        java.util.List<Student> active = new java.util.ArrayList<>();
-        for (Object obj : (java.util.List<?>) allStudents.getData()) {
+        java.util.ArrayList<Student> active = new java.util.ArrayList<>();
+        for (Object obj : (java.util.ArrayList<?>) allStudents.getData()) {
             Student s = (Student) obj;
             if (enrollmentService.hasActiveEnrollment(s.getCpf())) {
                 active.add(s);

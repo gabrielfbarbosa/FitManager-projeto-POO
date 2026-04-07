@@ -1,4 +1,4 @@
-package ui.menu.plan;
+package ui.menus.plan;
 
 import application.FitManager;
 import application.OperationResult;
@@ -7,7 +7,7 @@ import domain.model.Plan;
 
 import ui.screen.UserInterface;
 
-import java.util.List;
+import java.util.ArrayList;
 
 /**
  * Menu de gerenciamento de planos.
@@ -34,11 +34,11 @@ public class PlanMenu {
         boolean running = true;
 
         while (running) {
-            StringBuilder sb = new StringBuilder();
+            String menuOptions = "";
             for (PlanMenuOption opt : PlanMenuOption.values()) {
-                sb.append(opt.getNumber()).append(" - ").append(opt.getValorOpcao()).append("\n");
+                menuOptions += opt.getNumber() + " - " + opt.getValorOpcao() + "\n";
             }
-            String input = ui.showMenu("> GERENCIAR PLANOS", sb.toString());
+            String input = ui.showMenu("> GERENCIAR PLANOS", menuOptions);
 
             if (input == null) { running = false; continue; }
 
@@ -98,12 +98,12 @@ public class PlanMenu {
      */
     private PlanType selectPlanType() {
         PlanType[] types = PlanType.values();
-        StringBuilder options = new StringBuilder();
+        String options = "";
         for (int i = 0; i < types.length; i++) {
-            options.append(i + 1).append(" - ").append(types[i].getLabel()).append("\n");
+            options += (i + 1) + " - " + types[i].getLabel() + "\n";
         }
 
-        String choice = ui.showMenu("Selecione o Tipo do Plano", options.toString());
+        String choice = ui.showMenu("Selecione o Tipo do Plano", options);
         if (choice == null) return null;
 
         int index = Integer.parseInt(choice.trim()) - 1;
@@ -165,7 +165,6 @@ public class PlanMenu {
     /**
      * Fluxo de listagem de todos os planos.
      */
-    @SuppressWarnings("unchecked")
     private void listAllPlans() {
         OperationResult result = fitManager.listAllPlans();
 
@@ -174,17 +173,16 @@ public class PlanMenu {
             return;
         }
 
-        List<Plan> plans = (List<Plan>) result.getData();
-        StringBuilder sb = new StringBuilder();
-        sb.append("======== PLANOS CADASTRADOS ========\n");
-        sb.append("Total: ").append(plans.size()).append(" plano(s)\n\n");
+        ArrayList<Plan> plans = (ArrayList<Plan>) result.getData();
+        String message = "> PLANOS CADASTRADOS\n";
+        message += "Total: " + plans.size() + " plano(s)\n\n";
 
         for (int i = 0; i < plans.size(); i++) {
-            sb.append("--- Plano ").append(i + 1).append(" ---\n");
-            sb.append(plans.get(i).toString());
-            if (i < plans.size() - 1) sb.append("\n\n");
+            message += "--- Plano " + (i + 1) + " ---\n";
+            message += plans.get(i).toString();
+            if (i < plans.size() - 1) message += "\n\n";
         }
 
-        ui.showMessage(sb.toString());
+        ui.showMessage(message);
     }
 }

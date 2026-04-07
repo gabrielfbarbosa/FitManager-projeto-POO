@@ -1,4 +1,4 @@
-package ui.menu.reports;
+package ui.menus.reports;
 
 import application.FitManager;
 import application.OperationResult;
@@ -7,7 +7,7 @@ import domain.model.Student;
 
 import ui.screen.UserInterface;
 
-import java.util.List;
+import java.util.ArrayList;
 
 /**
  * Menu de relatórios e listagens.
@@ -35,11 +35,11 @@ public class ReportsMenu {
         boolean running = true;
 
         while (running) {
-            StringBuilder sb = new StringBuilder();
+            String menuOptions = "";
             for (ReportsMenuOption opt : ReportsMenuOption.values()) {
-                sb.append(opt.getNumber()).append(" - ").append(opt.getValorOpcao()).append("\n");
+                menuOptions += opt.getNumber() + " - " + opt.getValorOpcao() + "\n";
             }
-            String input = ui.showMenu("> RELATÓRIOS", sb.toString());
+            String input = ui.showMenu("> RELATÓRIOS", menuOptions);
 
             if (input == null) { running = false; continue; }
 
@@ -67,7 +67,6 @@ public class ReportsMenu {
     /**
      * Lista os alunos que possuem matrícula ativa no momento.
      */
-    @SuppressWarnings("unchecked")
     private void reportStudentsWithActiveEnrollment() {
         OperationResult result = fitManager.listStudentsWithActiveEnrollment();
 
@@ -76,19 +75,18 @@ public class ReportsMenu {
             return;
         }
 
-        List<Student> students = (List<Student>) result.getData();
-        StringBuilder sb = new StringBuilder();
-        sb.append("> ALUNOS COM MATRÍCULA ATIVA\n");
-        sb.append("Total: ").append(students.size()).append(" aluno(s)\n\n");
+        ArrayList<Student> students = (ArrayList<Student>) result.getData();
+        String message = "> ALUNOS COM MATRÍCULA ATIVA\n";
+        message += "Total: " + students.size() + " aluno(s)\n\n";
 
         for (int i = 0; i < students.size(); i++) {
-            sb.append(i + 1).append(". ")
-                    .append(students.get(i).getName())
-                    .append(" — CPF: ").append(students.get(i).getFormattedCpf());
-            if (i < students.size() - 1) sb.append("\n");
+            message += (i + 1) + ". "
+                    + students.get(i).getName()
+                    + " — CPF: " + students.get(i).getFormattedCpf();
+            if (i < students.size() - 1) message += "\n";
         }
 
-        ui.showMessage(sb.toString());
+        ui.showMessage(message);
     }
 
     // ============================
@@ -99,7 +97,6 @@ public class ReportsMenu {
      * Lista matrículas com saldo devedor (balance > 0).
      * Inclui ativas e canceladas com débito em aberto.
      */
-    @SuppressWarnings("unchecked")
     private void reportPendingBalance() {
         OperationResult result = fitManager.listEnrollmentsWithPendingBalance();
 
@@ -108,24 +105,23 @@ public class ReportsMenu {
             return;
         }
 
-        List<Enrollment> enrollments = (List<Enrollment>) result.getData();
-        StringBuilder sb = new StringBuilder();
-        sb.append("====== MATRÍCULAS COM SALDO PENDENTE ======\n");
-        sb.append("Total: ").append(enrollments.size()).append(" matrícula(s)\n\n");
+        ArrayList<Enrollment> enrollments = (ArrayList<Enrollment>) result.getData();
+        String message = "> MATRÍCULAS COM SALDO PENDENTE \n";
+        message += "Total: " + enrollments.size() + " matrícula(s)\n\n";
 
         for (int i = 0; i < enrollments.size(); i++) {
             Enrollment e = enrollments.get(i);
-            sb.append("--- ").append(i + 1).append(". Matrícula ").append(e.getCode()).append(" ---\n");
-            sb.append("Aluno: ").append(e.getStudent().getName()).append("\n");
-            sb.append("Plano: ").append(e.getPlan().getName()).append("\n");
-            sb.append("Status: ").append(e.getStatus().getLabel()).append("\n");
-            sb.append("Valor total: R$ ").append(String.format("%.2f", e.getTotalPrice())).append("\n");
-            sb.append("Total pago: R$ ").append(String.format("%.2f", e.calculateTotalPaid())).append("\n");
-            sb.append("Saldo pendente: R$ ").append(String.format("%.2f", e.calculateBalance()));
-            if (i < enrollments.size() - 1) sb.append("\n\n");
+            message += "--- " + (i + 1) + ". Matrícula " + e.getCode() + " ---\n";
+            message += "Aluno: " + e.getStudent().getName() + "\n";
+            message += "Plano: " + e.getPlan().getName() + "\n";
+            message += "Status: " + e.getStatus().getLabel() + "\n";
+            message += "Valor total: R$ " + String.format("%.2f", e.getTotalPrice()) + "\n";
+            message += "Total pago: R$ " + String.format("%.2f", e.calculateTotalPaid()) + "\n";
+            message += "Saldo pendente: R$ " + String.format("%.2f", e.calculateBalance());
+            if (i < enrollments.size() - 1) message += "\n\n";
         }
 
-        ui.showMessage(sb.toString());
+        ui.showMessage(message);
     }
 
     // ============================
@@ -135,7 +131,6 @@ public class ReportsMenu {
     /**
      * Lista todas as matrículas do sistema (ativas e canceladas).
      */
-    @SuppressWarnings("unchecked")
     private void reportAllEnrollments() {
         OperationResult result = fitManager.listAllEnrollments();
 
@@ -144,17 +139,16 @@ public class ReportsMenu {
             return;
         }
 
-        List<Enrollment> enrollments = (List<Enrollment>) result.getData();
-        StringBuilder sb = new StringBuilder();
-        sb.append("====== TODAS AS MATRÍCULAS ======\n");
-        sb.append("Total: ").append(enrollments.size()).append(" matrícula(s)\n\n");
+        ArrayList<Enrollment> enrollments = (ArrayList<Enrollment>) result.getData();
+        String message = "> TODAS AS MATRÍCULAS \n";
+        message += "Total: " + enrollments.size() + " matrícula(s)\n\n";
 
         for (int i = 0; i < enrollments.size(); i++) {
-            sb.append("--- Matrícula ").append(i + 1).append(" ---\n");
-            sb.append(enrollments.get(i).toString());
-            if (i < enrollments.size() - 1) sb.append("\n\n");
+            message += "--- Matrícula " + (i + 1) + " ---\n";
+            message += enrollments.get(i).toString();
+            if (i < enrollments.size() - 1) message += "\n\n";
         }
 
-        ui.showMessage(sb.toString());
+        ui.showMessage(message);
     }
 }

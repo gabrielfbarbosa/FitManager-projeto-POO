@@ -1,4 +1,4 @@
-package ui.menu.enrollment;
+package ui.menus.enrollment;
 
 public enum EnrollmentMenuOption {
     REALIZAR_MATRICULA(1, "Realizar matrícula"),

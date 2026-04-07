@@ -10,7 +10,6 @@ import domain.model.Student;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Serviço responsável por manter a coleção de matrículas em memória
@@ -23,7 +22,7 @@ import java.util.List;
 public class EnrollmentService {
 
     private static int nextCode = 1;
-    private List<Enrollment> enrollments;
+    private ArrayList<Enrollment> enrollments;
 
     public EnrollmentService() {
         this.enrollments = new ArrayList<>();
@@ -232,7 +231,7 @@ public class EnrollmentService {
     /**
      * Lista todas as matrículas (ativas e canceladas).
      *
-     * @return OperationResult com List<Enrollment> em data
+     * @return OperationResult com ArrayList<Enrollment> em data
      */
     public OperationResult listAll() {
         if (enrollments.isEmpty()) {
@@ -246,10 +245,10 @@ public class EnrollmentService {
     /**
      * Lista apenas as matrículas ativas.
      *
-     * @return OperationResult com List<Enrollment> em data
+     * @return OperationResult com ArrayList<Enrollment> em data
      */
     public OperationResult listActive() {
-        List<Enrollment> active = new ArrayList<>();
+        ArrayList<Enrollment> active = new ArrayList<>();
         for (Enrollment enrollment : enrollments) {
             if (enrollment.getStatus() == EnrollmentStatus.ACTIVE) {
                 active.add(enrollment);
@@ -267,10 +266,10 @@ public class EnrollmentService {
      * Lista matrículas com saldo pendente (balance > 0).
      * Inclui matrículas ativas e canceladas com débito em aberto.
      *
-     * @return OperationResult com List<Enrollment> em data
+     * @return OperationResult com ArrayList<Enrollment> em data
      */
     public OperationResult listWithPendingBalance() {
-        List<Enrollment> pending = new ArrayList<>();
+        ArrayList<Enrollment> pending = new ArrayList<>();
         for (Enrollment enrollment : enrollments) {
             if (enrollment.calculateBalance() > 0) {
                 pending.add(enrollment);
@@ -288,7 +287,7 @@ public class EnrollmentService {
      * Lista o histórico de matrículas de um aluno (todas, ativas e canceladas).
      *
      * @param cpf CPF do aluno (apenas dígitos)
-     * @return OperationResult com List<Enrollment> em data
+     * @return OperationResult com ArrayList<Enrollment> em data
      */
     public OperationResult listHistoryByStudent(String cpf) {
         if (cpf == null || cpf.trim().isEmpty()) {
@@ -296,7 +295,7 @@ public class EnrollmentService {
         }
 
         String cleanCpf = cpf.replaceAll("[^0-9]", "");
-        List<Enrollment> history = new ArrayList<>();
+        ArrayList<Enrollment> history = new ArrayList<>();
 
         for (Enrollment enrollment : enrollments) {
             if (enrollment.getStudent().getCpf().equals(cleanCpf)) {

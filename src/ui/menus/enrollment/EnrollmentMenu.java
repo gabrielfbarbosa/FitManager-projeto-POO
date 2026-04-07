@@ -1,4 +1,4 @@
-package ui.menu.enrollment;
+package ui.menus.enrollment;
 
 import application.FitManager;
 import application.OperationResult;
@@ -8,7 +8,7 @@ import domain.model.Payment;
 
 import ui.screen.UserInterface;
 
-import java.util.List;
+import java.util.ArrayList;
 
 /**
  * Menu de gerenciamento de matrículas.
@@ -34,11 +34,11 @@ public class EnrollmentMenu {
         boolean running = true;
 
         while (running) {
-            StringBuilder sb = new StringBuilder();
+            String menuOptions = "";
             for (EnrollmentMenuOption opt : EnrollmentMenuOption.values()) {
-                sb.append(opt.getNumber()).append(" - ").append(opt.getValorOpcao()).append("\n");
+                menuOptions += opt.getNumber() + " - " + opt.getValorOpcao() + "\n";
             }
-            String input = ui.showMenu("> GERENCIAR MATRÍCULAS", sb.toString());
+            String input = ui.showMenu("> GERENCIAR MATRÍCULAS", menuOptions);
 
             if (input == null) { running = false; continue; }
 
@@ -165,7 +165,7 @@ public class EnrollmentMenu {
         if (result.isSuccess()) {
             Enrollment enrollment = (Enrollment) result.getData();
             ui.showMessage(result.getMessage() + "\n\n"
-                    + "====== RESUMO FINANCEIRO ======\n"
+                    + "> RESUMO FINANCEIRO \n"
                     + "Valor total do contrato: R$ "
                     + String.format("%.2f", enrollment.getTotalPrice()) + "\n"
                     + "Total pago: R$ "
@@ -205,7 +205,6 @@ public class EnrollmentMenu {
     /**
      * Lista o histórico de matrículas de um aluno (ativas e canceladas).
      */
-    @SuppressWarnings("unchecked")
     private void listHistory() {
         String cpf = ui.getInput("CPF do aluno (apenas números):");
         if (cpf == null) return;
@@ -217,18 +216,17 @@ public class EnrollmentMenu {
             return;
         }
 
-        List<Enrollment> enrollments = (List<Enrollment>) result.getData();
-        StringBuilder sb = new StringBuilder();
-        sb.append("====== HISTÓRICO DE MATRÍCULAS ======\n");
-        sb.append("Total: ").append(enrollments.size()).append(" matrícula(s)\n\n");
+        ArrayList<Enrollment> enrollments = (ArrayList<Enrollment>) result.getData();
+        String message = "> HISTÓRICO DE MATRÍCULAS\n";
+        message += "Total: " + enrollments.size() + " matrícula(s)\n\n";
 
         for (int i = 0; i < enrollments.size(); i++) {
-            sb.append("--- Matrícula ").append(i + 1).append(" ---\n");
-            sb.append(enrollments.get(i).toString());
-            if (i < enrollments.size() - 1) sb.append("\n\n");
+            message += "--- Matrícula " + (i + 1) + " ---\n";
+            message += enrollments.get(i).toString();
+            if (i < enrollments.size() - 1) message += "\n\n";
         }
 
-        ui.showMessage(sb.toString());
+        ui.showMessage(message);
     }
 
     // ============================
@@ -243,12 +241,12 @@ public class EnrollmentMenu {
      */
     private PaymentType selectPaymentType() {
         PaymentType[] types = PaymentType.values();
-        StringBuilder options = new StringBuilder();
+        String options = "";
         for (int i = 0; i < types.length; i++) {
-            options.append(i + 1).append(" - ").append(types[i].getLabel()).append("\n");
+            options += (i + 1) + " - " + types[i].getLabel() + "\n";
         }
 
-        String choice = ui.showMenu("Selecione o Tipo de Pagamento", options.toString());
+        String choice = ui.showMenu("Selecione o Tipo de Pagamento", options);
         if (choice == null) return null;
 
         int index = Integer.parseInt(choice.trim()) - 1;
@@ -264,11 +262,11 @@ public class EnrollmentMenu {
      * Monta o resumo de uma matrícula para exibição após criação.
      */
     private String buildEnrollmentSummary(Enrollment enrollment) {
-        List<Payment> payments = enrollment.getPayments();
+        ArrayList<Payment> payments = enrollment.getPayments();
         double pago = enrollment.calculateTotalPaid();
         double saldo = enrollment.calculateBalance();
 
-        return "====== RESUMO DA MATRÍCULA ======\n"
+        return "> RESUMO DA MATRÍCULA \n"
                 + enrollment.toString() + "\n\n"
                 + "Pagamentos registrados: " + payments.size() + "\n"
                 + "Total pago: R$ " + String.format("%.2f", pago) + "\n"

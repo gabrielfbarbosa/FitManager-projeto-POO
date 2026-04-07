@@ -1,6 +1,6 @@
 import application.DataMock;
 import application.FitManager;
-import ui.menu.main.MainMenu;
+import ui.menus.main.MainMenu;
 import ui.screen.UserInterface;
 
 /**

@@ -7,7 +7,6 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Serviço responsável por manter a coleção de alunos em memória
@@ -17,7 +16,7 @@ import java.util.List;
  */
 public class StudentService {
 
-    private List<Student> students;
+    private ArrayList<Student> students;
 
     public StudentService() {
         this.students = new ArrayList<>();
@@ -143,10 +142,10 @@ public class StudentService {
     /**
      * Lista todos os alunos ativos.
      *
-     * @return OperationResult com List<Student> em data
+     * @return OperationResult com ArrayList<Student> em data
      */
     public OperationResult listAll() {
-        List<Student> activeStudents = new ArrayList<>();
+        ArrayList<Student> activeStudents = new ArrayList<>();
         for (Student student : students) {
             if (student.isActive()) {
                 activeStudents.add(student);

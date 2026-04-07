@@ -442,7 +442,7 @@ Esta seção documenta as principais decisões tomadas durante o desenvolvimento
 
 **Decisão:** Cada menu tem seu próprio enum de opções (`MainMenuOption`, `StudentMenuOption`, etc.) dentro do mesmo subpacote do menu correspondente.
 
-**Justificativa:** Mantém a coesão entre o menu e suas opções — `PlanMenu` e `PlanMenuOption` estão no mesmo pacote `ui.menu.plan`. A interface `MenuOption` fornece o contrato comum (`getNumber()`, `getValorOpcao()`, `fromNumber()`), permitindo que `UserInterface.showMenu()` aceite qualquer enum de menu sem conhecer o tipo específico.
+**Justificativa:** Mantém a coesão entre o menu e suas opções — `PlanMenu` e `PlanMenuOption` estão no mesmo pacote `ui.menus.plan`. A interface `MenuOption` fornece o contrato comum (`getNumber()`, `getValorOpcao()`, `fromNumber()`), permitindo que `UserInterface.showMenu()` aceite qualquer enum de menu sem conhecer o tipo específico.
 
 ---
 

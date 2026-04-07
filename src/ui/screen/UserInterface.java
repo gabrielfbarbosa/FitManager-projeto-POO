@@ -29,7 +29,7 @@ public class UserInterface {
         return JOptionPane.showInputDialog(
                 null,
                 options + "\n\nEscolha uma opção:",
-                title + " — " + APP_TITLE,
+                APP_TITLE + " " + title,
                 JOptionPane.QUESTION_MESSAGE
         );
     }
@@ -49,35 +49,6 @@ public class UserInterface {
                 JOptionPane.QUESTION_MESSAGE
         );
         return input;
-    }
-
-    /**
-     * Solicita e converte uma entrada inteira do usuário.
-     * Exibe mensagem de erro e retorna Integer.MIN_VALUE se a entrada for
-     * cancelada ou não numérica.
-     *
-     * @param prompt       texto do prompt exibido
-     * @param errorMessage mensagem exibida quando a conversão falha
-     * @return o valor inteiro, ou Integer.MIN_VALUE se cancelou ou inválido
-     */
-    public int getIntInput(String prompt) {
-        String input = getInput(prompt);
-        if (input == null) return Integer.MIN_VALUE;
-        return Integer.parseInt(input.trim());
-    }
-
-    /**
-     * Solicita e converte uma entrada decimal do usuário.
-     * Aceita vírgula como separador decimal (substitui por ponto antes da conversão).
-     * Exibe mensagem de erro e retorna Double.NaN se a entrada for cancelada ou inválida.
-     *
-     * @param prompt texto do prompt exibido
-     * @return o valor decimal, ou Double.NaN se cancelou ou inválido
-     */
-    public double getDoubleInput(String prompt) {
-        String input = getInput(prompt);
-        if (input == null) return Double.NaN;
-        return Double.parseDouble(input.trim().replace(",", "."));
     }
 
     /**
@@ -103,8 +74,37 @@ public class UserInterface {
         JOptionPane.showMessageDialog(
                 null,
                 message,
-                APP_TITLE + " — Erro",
+                APP_TITLE + " | [ERRO]",
                 JOptionPane.ERROR_MESSAGE
         );
+    }
+
+
+    /**
+     * Solicita e converte uma entrada inteira do usuário.
+     * Exibe mensagem de erro e retorna Integer.MIN_VALUE se a entrada for
+     * cancelada ou não numérica.
+     *
+     * @param prompt       texto do prompt exibido
+     * @return o valor inteiro, ou Integer.MIN_VALUE se cancelou ou inválido
+     */
+    public int getIntInput(String prompt) {
+        String input = getInput(prompt);
+        if (input == null) return Integer.MIN_VALUE;
+        return Integer.parseInt(input.trim());
+    }
+
+    /**
+     * Solicita e converte uma entrada decimal do usuário.
+     * Aceita vírgula como separador decimal (substitui por ponto antes da conversão).
+     * Exibe mensagem de erro e retorna Double.NaN se a entrada for cancelada ou inválida.
+     *
+     * @param prompt texto do prompt exibido
+     * @return o valor decimal, ou Double.NaN se cancelou ou inválido
+     */
+    public double getDoubleInput(String prompt) {
+        String input = getInput(prompt);
+        if (input == null) return Double.NaN;
+        return Double.parseDouble(input.trim().replace(",", "."));
     }
 }
