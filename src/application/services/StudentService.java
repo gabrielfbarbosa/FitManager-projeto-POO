@@ -5,7 +5,6 @@ import domain.model.Student;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-
 import java.util.ArrayList;
 
 /**
@@ -28,8 +27,46 @@ public class StudentService {
      *
      * @return OperationResult com o Student criado em data (se sucesso)
      */
-    public OperationResult registerStudent(String name, String cpf, String contact, String birthDateStr) {
-        // Validação de campos obrigatórios
+    public OperationResult registerStudent(
+        String name,
+        String cpf,
+        String contact,
+        String birthDateStr
+    ) {
+        OperationResult fieldCheck = validateRequiredFields(name, cpf, contact, birthDateStr);
+        if (!fieldCheck.isSuccess()) {
+            return fieldCheck;
+        }
+
+        String cleanCpf = Student.cleanCpf(cpf);
+
+        if (!Student.validateCpf(cleanCpf)) {
+            return new OperationResult(false, "CPF inválido. Verifique os dígitos e tente novamente.");
+        }
+        if (cpfExists(cleanCpf)) {
+            return new OperationResult(false, "Já existe um aluno cadastrado com este CPF.");
+        }
+
+        LocalDate birthDate = LocalDate.parse(
+                birthDateStr.trim(),
+                DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+
+        if (birthDate.isAfter(LocalDate.now())) {
+            return new OperationResult(false, "A data de nascimento não pode ser uma data futura.");
+        }
+
+        Student student = new Student(name.trim(), cleanCpf, contact.trim(), birthDate);
+        students.add(student);
+
+        return new OperationResult(true,
+                "✅ Aluno " + student.getName() + " registrado com sucesso!", student);
+    }
+
+    /**
+     * Valida que nenhum campo obrigatório do aluno está vazio.
+     */
+    private OperationResult validateRequiredFields(String name, String cpf,
+                                                   String contact, String birthDateStr) {
         if (name == null || name.trim().isEmpty()) {
             return new OperationResult(false, "O nome é obrigatório.");
         }
@@ -42,35 +79,7 @@ public class StudentService {
         if (birthDateStr == null || birthDateStr.trim().isEmpty()) {
             return new OperationResult(false, "A data de nascimento é obrigatória.");
         }
-
-        // Limpa CPF — mantém apenas números
-        String cleanCpf = cpf.replaceAll("[^0-9]", "");
-
-        // Validação do CPF (dígito verificador completo)
-        if (!Student.validateCpf(cleanCpf)) {
-            return new OperationResult(false, "CPF inválido. Verifique os dígitos e tente novamente.");
-        }
-
-        // Verifica unicidade do CPF
-        if (cpfExists(cleanCpf)) {
-            return new OperationResult(false, "Já existe um aluno cadastrado com este CPF.");
-        }
-
-        // Parse da data de nascimento
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        LocalDate birthDate = LocalDate.parse(birthDateStr.trim(), formatter);
-
-        // Valida se a data não é futura
-        if (birthDate.isAfter(LocalDate.now())) {
-            return new OperationResult(false, "A data de nascimento não pode ser uma data futura.");
-        }
-
-        // Cria e registra o aluno
-        Student student = new Student(name.trim(), cleanCpf, contact.trim(), birthDate);
-        students.add(student);
-
-        return new OperationResult(true,
-                "✅ Aluno " + student.getName() + " registrado com sucesso!", student);
+        return new OperationResult(true, "ok");
     }
 
     /**
@@ -83,7 +92,7 @@ public class StudentService {
             return new OperationResult(false, "O CPF é obrigatório para consulta.");
         }
 
-        String cleanCpf = cpf.replaceAll("[^0-9]", "");
+        String cleanCpf = Student.cleanCpf(cpf);
 
         for (Student student : students) {
             if (student.getCpf().equals(cleanCpf) && student.isActive()) {
@@ -101,7 +110,7 @@ public class StudentService {
      * @return OperationResult indicando sucesso ou falha
      */
     public OperationResult removeStudent(String cpf) {
-        String cleanCpf = cpf.replaceAll("[^0-9]", "");
+        String cleanCpf = Student.cleanCpf(cpf);
 
         for (Student student : students) {
             if (student.getCpf().equals(cleanCpf) && student.isActive()) {
@@ -120,8 +129,12 @@ public class StudentService {
      *
      * @return OperationResult com o Student atualizado em data (se sucesso)
      */
-    public OperationResult updateStudent(String cpf, String newName, String newContact) {
-        String cleanCpf = cpf.replaceAll("[^0-9]", "");
+    public OperationResult updateStudent(
+        String cpf,
+        String newName,
+        String newContact
+    ) {
+        String cleanCpf = Student.cleanCpf(cpf);
 
         for (Student student : students) {
             if (student.getCpf().equals(cleanCpf) && student.isActive()) {

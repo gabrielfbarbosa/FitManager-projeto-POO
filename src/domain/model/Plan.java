@@ -12,7 +12,13 @@ public class Plan {
     private int minimumDuration; // em meses
     private double pricePerMonth;
 
-    public Plan(String name, String description, PlanType type, int minimumDuration, double pricePerMonth) {
+    public Plan(
+        String name,
+        String description,
+        PlanType type,
+        int minimumDuration,
+        double pricePerMonth
+    ) {
         this.name = name;
         this.description = description;
         this.type = type;
@@ -27,7 +33,7 @@ public class Plan {
     /**
      * Calcula o preço total para uma determinada quantidade de meses.
      * Aplica desconto de 10% nos meses que excedem a duração mínima do plano.
-     *
+     * <p>
      * Exemplo: Plano mensal (min. 1 mês, R$100/mês) contratado por 12 meses:
      * 1 × R$100 + 11 × R$90 = R$1.090,00
      *
@@ -100,9 +106,9 @@ public class Plan {
     @Override
     public String toString() {
         return "Nome: " + name + "\n" +
-               "Descrição: " + description + "\n" +
-               "Tipo: " + type.getLabel() + "\n" +
-               "Duração mínima: " + minimumDuration + (minimumDuration == 1 ? " mês" : " meses") + "\n" +
-               "Preço/mês: R$ " + String.format("%.2f", pricePerMonth);
+                "Descrição: " + description + "\n" +
+                "Tipo: " + type.getLabel() + "\n" +
+                "Duração mínima: " + minimumDuration + (minimumDuration == 1 ? " mês" : " meses") + "\n" +
+                "Preço/mês: R$ " + String.format("%.2f", pricePerMonth);
     }
 }

@@ -10,6 +10,7 @@ import domain.model.Student;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 
 
 /**
@@ -69,7 +70,7 @@ public class FitManager {
      * Os serviços não se comunicam diretamente entre si.
      */
     public OperationResult removeStudent(String cpf) {
-        String cleanCpf = cpf.replaceAll("[^0-9]", "");
+        String cleanCpf = Student.cleanCpf(cpf);
 
         // Verifica se o aluno existe e está ativo
         OperationResult findResult = studentService.findByCpf(cleanCpf);
@@ -154,58 +155,72 @@ public class FitManager {
                                          int durationMonths, double initialAmount,
                                          PaymentType paymentType, String paymentDescription) {
 
-        String cleanCpf = cpf.replaceAll("[^0-9]", "");
+        String cleanCpf = Student.cleanCpf(cpf);
 
-        // Localiza o aluno
         OperationResult studentResult = studentService.findByCpf(cleanCpf);
         if (!studentResult.isSuccess()) {
             return studentResult;
         }
-        Student student = (Student) studentResult.getData();
 
-        // Localiza o plano
         OperationResult planResult = planService.findByName(planName);
         if (!planResult.isSuccess()) {
             return planResult;
         }
-        Plan plan = (Plan) planResult.getData();
 
-        // Verifica se o aluno já possui matrícula ativa
         if (enrollmentService.hasActiveEnrollment(cleanCpf)) {
             return new OperationResult(false,
                     "O aluno já possui uma matrícula ativa. "
                             + "Cancele a matrícula atual antes de realizar uma nova.");
         }
 
-        // Valida o pagamento inicial
-        if (initialAmount <= 0) {
-            return new OperationResult(false,
-                    "O valor do pagamento inicial deve ser positivo.");
-        }
-        if (paymentType == null) {
-            return new OperationResult(false, "O tipo de pagamento é obrigatório.");
+        OperationResult paymentCheck = validateInitialPayment(initialAmount, paymentType);
+        if (!paymentCheck.isSuccess()) {
+            return paymentCheck;
         }
 
-        // Converte a data de início
-        LocalDate startDate = LocalDate.parse(startDateStr.trim(),
+        LocalDate startDate = LocalDate.parse(
+                startDateStr.trim(),
                 DateTimeFormatter.ofPattern("dd/MM/yyyy"));
 
-        // Delega ao EnrollmentService — cria Enrollment + Payment atomicamente
+        Student student = (Student) studentResult.getData();
+        Plan plan = (Plan) planResult.getData();
         return enrollmentService.enroll(student, plan, startDate, durationMonths,
                 initialAmount, paymentType, paymentDescription);
     }
 
     /**
+     * Valida o valor e o tipo do pagamento inicial de uma matrícula.
+     */
+    private OperationResult validateInitialPayment(double initialAmount, PaymentType paymentType) {
+        if (initialAmount <= 0) {
+            return new OperationResult(false, "O valor do pagamento inicial deve ser positivo.");
+        }
+        if (paymentType == null) {
+            return new OperationResult(false, "O tipo de pagamento é obrigatório.");
+        }
+        return new OperationResult(true, "ok");
+    }
+
+    /**
      * Registra um pagamento em uma matrícula existente e ativa.
      *
-     * @param enrollmentCode código da matrícula (ex: "MAT-001")
+     * @param enrollmentCode código inteiro da matrícula
      * @param amount         valor do pagamento
      * @param paymentType    tipo do pagamento
      * @param description    descrição do pagamento
      */
-    public OperationResult registerPayment(String enrollmentCode, double amount,
-                                           PaymentType paymentType, String description) {
-        return enrollmentService.registerPayment(enrollmentCode, amount, paymentType, description);
+    public OperationResult registerPayment(
+        int enrollmentCode,
+        double amount,
+        PaymentType paymentType,
+        String description
+    ) {
+        return enrollmentService.registerPayment(
+            enrollmentCode,
+            amount,
+            paymentType,
+            description
+        );
     }
 
     /**
@@ -214,7 +229,7 @@ public class FitManager {
      *
      * @param enrollmentCode código da matrícula
      */
-    public OperationResult cancelEnrollment(String enrollmentCode) {
+    public OperationResult cancelEnrollment(int enrollmentCode) {
         return enrollmentService.cancelEnrollment(enrollmentCode);
     }
 
@@ -224,7 +239,7 @@ public class FitManager {
      * @param cpf CPF do aluno
      */
     public OperationResult findActiveEnrollmentByStudent(String cpf) {
-        String cleanCpf = cpf.replaceAll("[^0-9]", "");
+        String cleanCpf = Student.cleanCpf(cpf);
         return enrollmentService.findActiveByStudentCpf(cleanCpf);
     }
 
@@ -234,7 +249,7 @@ public class FitManager {
      * @param cpf CPF do aluno
      */
     public OperationResult listEnrollmentHistory(String cpf) {
-        String cleanCpf = cpf.replaceAll("[^0-9]", "");
+        String cleanCpf = Student.cleanCpf(cpf);
         return enrollmentService.listHistoryByStudent(cleanCpf);
     }
 
@@ -266,11 +281,10 @@ public class FitManager {
             return allStudents;
         }
 
-        java.util.ArrayList<Student> active = new java.util.ArrayList<>();
-        for (Object obj : (java.util.ArrayList<?>) allStudents.getData()) {
-            Student s = (Student) obj;
-            if (enrollmentService.hasActiveEnrollment(s.getCpf())) {
-                active.add(s);
+        ArrayList<Student> active = new ArrayList<>();
+        for (Student student : (ArrayList<Student>) allStudents.getData()) {
+            if (enrollmentService.hasActiveEnrollment(student.getCpf())) {
+                active.add(student);
             }
         }
 

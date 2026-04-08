@@ -125,8 +125,8 @@ public class EnrollmentMenu {
      * Exibe o saldo atualizado após o pagamento.
      */
     private void registerPayment() {
-        String code = ui.getInput("Código da matrícula (ex: MAT-001):");
-        if (code == null) return;
+        int intCode = ui.getIntInput("Código da matrícula:");
+        if (intCode == Integer.MIN_VALUE) return;
 
         double amount = ui.getDoubleInput("Valor do pagamento (R$):");
         if (Double.isNaN(amount)) return;
@@ -136,7 +136,7 @@ public class EnrollmentMenu {
 
         String description = ui.getInput("Descrição do pagamento (opcional — Enter para pular):");
 
-        OperationResult result = fitManager.registerPayment(code, amount, paymentType, description);
+        OperationResult result = fitManager.registerPayment(intCode, amount, paymentType, description);
 
         if (result.isSuccess()) {
             Enrollment enrollment = (Enrollment) result.getData();
@@ -157,8 +157,8 @@ public class EnrollmentMenu {
      * Exibe resumo financeiro completo no momento do cancelamento.
      */
     private void cancelEnrollment() {
-        String code = ui.getInput("Código da matrícula a cancelar (ex: MAT-001):");
-        if (code == null) return;
+        int code = ui.getIntInput("Código da matrícula a cancelar:");
+        if (code == Integer.MIN_VALUE) return;
 
         OperationResult result = fitManager.cancelEnrollment(code);
 
@@ -226,7 +226,7 @@ public class EnrollmentMenu {
             if (i < enrollments.size() - 1) message += "\n\n";
         }
 
-        ui.showMessage(message);
+        ui.showScrollableMessage(message);
     }
 
     // ============================

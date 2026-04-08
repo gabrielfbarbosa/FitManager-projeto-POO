@@ -6,26 +6,21 @@ import domain.enums.PlanType;
 /**
  * Popula o sistema com dados de teste para facilitar os testes manuais.
  *
- * Deve ser chamado apenas durante o desenvolvimento — desative comentando
- * a linha DataSeeder.seed(fitManager) no FitManagerApp antes da entrega.
- *
- * Dados criados:
- *   Alunos:    4 alunos ativos, 1 inativo
- *   Planos:    4 planos (um por PlanType)
- *   Matrículas: 3 ativas (com pagamentos variados), 1 cancelada
+ * Cenários cobertos:
+ * - alunos ativos e inativos
+ * - alunos sem matrícula
+ * - matrículas ativas
+ * - matrículas canceladas
+ * - histórico com mais de uma matrícula para o mesmo aluno
+ * - aluno inativo com histórico de matrícula
  */
 public class DataMock {
 
-    /**
-     * Executa toda a carga de dados de teste no FitManager.
-     * Falhas silenciosas — dados duplicados são ignorados.
-     *
-     * @param fm instância do FitManager já inicializado
-     */
     public static void mock(FitManager fm) {
         mockPlans(fm);
         mockStudents(fm);
         mockEnrollments(fm);
+        mockInactiveStudents(fm);
     }
 
     // ============================
@@ -33,7 +28,6 @@ public class DataMock {
     // ============================
 
     private static void mockPlans(FitManager fm) {
-        // Plano Mensal — mínimo 1 mês, R$ 99,90/mês
         fm.registerPlan(
                 "Plano Mensal",
                 "Acesso à academia por 1 mês, renovável mensalmente.",
@@ -42,7 +36,6 @@ public class DataMock {
                 99.90
         );
 
-        // Plano Trimestral — mínimo 3 meses, R$ 89,90/mês
         fm.registerPlan(
                 "Plano Trimestral",
                 "Acesso à academia por trimestre com desconto progressivo.",
@@ -51,7 +44,6 @@ public class DataMock {
                 89.90
         );
 
-        // Plano Semestral — mínimo 6 meses, R$ 79,90/mês
         fm.registerPlan(
                 "Plano Semestral",
                 "Acesso à academia por semestre com desconto progressivo.",
@@ -60,7 +52,6 @@ public class DataMock {
                 79.90
         );
 
-        // Plano Anual — mínimo 12 meses, R$ 69,90/mês
         fm.registerPlan(
                 "Plano Anual",
                 "Acesso à academia por um ano inteiro com melhor custo-benefício.",
@@ -75,7 +66,7 @@ public class DataMock {
     // ============================
 
     private static void mockStudents(FitManager fm) {
-        // Aluno 1 — CPF válido, terá matrícula ativa com pagamentos em dia
+        // Ativo com matrícula ativa e pagamentos parciais
         fm.registerStudent(
                 "Carlos Eduardo Silva",
                 "52998224725",
@@ -83,7 +74,7 @@ public class DataMock {
                 "15/03/1995"
         );
 
-        // Aluno 2 — terá matrícula ativa com saldo pendente
+        // Ativa com matrícula ativa e saldo pendente
         fm.registerStudent(
                 "Ana Paula Ferreira",
                 "71428793860",
@@ -91,7 +82,7 @@ public class DataMock {
                 "22/07/1998"
         );
 
-        // Aluno 3 — terá matrícula ativa quitada
+        // Ativo com matrícula ativa quitada
         fm.registerStudent(
                 "Bruno Henrique Costa",
                 "87748248800",
@@ -99,30 +90,37 @@ public class DataMock {
                 "08/11/1990"
         );
 
-        // Aluno 4 — terá matrícula cancelada (útil para testar relatórios)
+        // Ativa com matrícula cancelada
         fm.registerStudent(
                 "Fernanda Lima Rocha",
-                "34650463280",
+                "34650463238", //"34650463280",
                 "fernanda.rocha@email.com",
                 "30/01/2000"
         );
 
-        // Aluno 5 — sem matrícula (útil para testar cadastro de nova matrícula)
+        // Ativo sem matrícula
         fm.registerStudent(
                 "Ricardo Mendes Alves",
-                "47093450819",
+                "47093450822",//"47093450819",
                 "(67) 98765-4321",
                 "14/06/1985"
         );
 
-        // Aluno 6 — será inativado (útil para testar busca de inativo)
+        // Ficará inativa, mas com histórico de matrícula cancelada
         fm.registerStudent(
                 "Juliana Torres Souza",
-                "07859546431",
+                "07859546434", //"07859546431",
                 "ju.torres@email.com",
                 "03/09/1993"
         );
-        fm.removeStudent("07859546431");
+
+        // Ficará inativo e sem matrícula
+        fm.registerStudent(
+                "Marcos Vinicius Lima",
+                "18345678904", //"18345678909",
+                "marcos.lima@email.com",
+                "11/12/1992"
+        );
     }
 
     // ============================
@@ -131,8 +129,7 @@ public class DataMock {
 
     private static void mockEnrollments(FitManager fm) {
 
-        // Matrícula 1 — Carlos / Plano Anual / 12 meses
-        // Pagamentos: 3 parcelas pagas → saldo pendente
+        // Matrícula 1 — Carlos / ativa / parcial
         fm.enrollStudent(
                 "52998224725",
                 "Plano Anual",
@@ -142,11 +139,10 @@ public class DataMock {
                 PaymentType.PIX,
                 "1ª parcela — janeiro"
         );
-        fm.registerPayment("MAT-001", 69.90, PaymentType.PIX,    "2ª parcela — fevereiro");
-        fm.registerPayment("MAT-001", 69.90, PaymentType.DEBIT_CARD, "3ª parcela — março");
+        fm.registerPayment(1, 69.90, PaymentType.PIX, "2ª parcela — fevereiro");
+        fm.registerPayment(1, 69.90, PaymentType.DEBIT_CARD, "3ª parcela — março");
 
-        // Matrícula 2 — Ana Paula / Plano Mensal / 1 mês
-        // Pagamento inicial apenas → saldo pendente de parte do mês
+        // Matrícula 2 — Ana / ativa / saldo pendente
         fm.enrollStudent(
                 "71428793860",
                 "Plano Mensal",
@@ -157,8 +153,7 @@ public class DataMock {
                 "Entrada parcial"
         );
 
-        // Matrícula 3 — Bruno / Plano Trimestral / 3 meses / quitada
-        // Total: 3 × R$89,90 = R$269,70 — pago integralmente
+        // Matrícula 3 — Bruno / ativa / quitada
         fm.enrollStudent(
                 "87748248800",
                 "Plano Trimestral",
@@ -168,13 +163,12 @@ public class DataMock {
                 PaymentType.CREDIT_CARD,
                 "1ª parcela"
         );
-        fm.registerPayment("MAT-003", 89.90, PaymentType.CREDIT_CARD, "2ª parcela");
-        fm.registerPayment("MAT-003", 89.90, PaymentType.CREDIT_CARD, "3ª parcela — quitado");
+        fm.registerPayment(3, 89.90, PaymentType.CREDIT_CARD, "2ª parcela");
+        fm.registerPayment(3, 89.90, PaymentType.CREDIT_CARD, "3ª parcela — quitado");
 
-        // Matrícula 4 — Fernanda / Plano Semestral / 6 meses → cancelada
-        // Útil para testar: cancelamento, relatório de saldo pendente em cancelada
+        // Matrícula 4 — Fernanda / cancelada
         fm.enrollStudent(
-                "34650463280",
+                "34650463238", //34650463280
                 "Plano Semestral",
                 "01/02/2026",
                 6,
@@ -182,6 +176,42 @@ public class DataMock {
                 PaymentType.PIX,
                 "Pagamento inicial"
         );
-        fm.cancelEnrollment("MAT-004");
+        fm.cancelEnrollment(4);
+
+        // Matrícula 5 — Juliana / cancelada, depois a aluna será inativada
+        fm.enrollStudent(
+                "07859546434", // "07859546431",
+                "Plano Mensal",
+                "10/02/2026",
+                1,
+                99.90,
+                PaymentType.PIX,
+                "Pagamento inicial"
+        );
+        fm.cancelEnrollment(5);
+
+        // Matrícula 6 — Fernanda novamente, agora ativa
+        // Serve para testar histórico com múltiplas matrículas no mesmo CPF
+        fm.enrollStudent(
+                "34650463238", //34650463280
+                "Plano Trimestral",
+                "15/03/2026",
+                3,
+                89.90,
+                PaymentType.CREDIT_CARD,
+                "Nova matrícula após cancelamento anterior"
+        );
+    }
+
+    // ============================
+    // Inativação de alunos
+    // ============================
+
+    private static void mockInactiveStudents(FitManager fm) {
+        // Juliana fica inativa, mas mantém histórico
+        fm.removeStudent("07859546434");//"07859546431"
+
+        // Marcos fica inativo e sem matrícula
+        fm.removeStudent("18345678904"); // "18345678909"
     }
 }

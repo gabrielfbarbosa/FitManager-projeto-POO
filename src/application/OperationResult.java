@@ -31,7 +31,11 @@ public class OperationResult {
     /**
      * Construtor completo — sucesso, mensagem e dado de retorno.
      */
-    public OperationResult(boolean success, String message, Object data) {
+    public OperationResult(
+        boolean success,
+        String message,
+        Object data
+    ) {
         this.success = success;
         this.message = message;
         this.data = data;

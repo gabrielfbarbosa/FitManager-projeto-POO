@@ -41,6 +41,10 @@ public class PlanMenu {
             String input = ui.showMenu("> GERENCIAR PLANOS", menuOptions);
 
             if (input == null) { running = false; continue; }
+            if (ui.isNumeric(input)) {
+                ui.showError("Opção inválida. Digite um número de 1 a " + PlanMenuOption.values().length + ".");
+                continue;
+            }
 
             PlanMenuOption option = PlanMenuOption.fromNumber(Integer.parseInt(input.trim()));
 
@@ -105,6 +109,10 @@ public class PlanMenu {
 
         String choice = ui.showMenu("Selecione o Tipo do Plano", options);
         if (choice == null) return null;
+        if (ui.isNumeric(choice)) {
+            ui.showError("Tipo de plano inválido. Digite um número de 1 a " + types.length + ".");
+            return null;
+        }
 
         int index = Integer.parseInt(choice.trim()) - 1;
         if (index >= 0 && index < types.length) {
@@ -183,6 +191,6 @@ public class PlanMenu {
             if (i < plans.size() - 1) message += "\n\n";
         }
 
-        ui.showMessage(message);
+        ui.showScrollableMessage(message);
     }
 }

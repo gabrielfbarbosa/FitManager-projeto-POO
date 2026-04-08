@@ -12,7 +12,12 @@ public class Student {
     private boolean active;
     private LocalDate removedAt;
 
-    public Student(String name, String cpf, String contact, LocalDate birthDate) {
+    public Student(
+        String name,
+        String cpf,
+        String contact,
+        LocalDate birthDate
+    ) {
         this.name = name;
         this.cpf = cpf;
         this.contact = contact;
@@ -51,13 +56,37 @@ public class Student {
     }
 
     /**
+     * Remove todos os caracteres não numéricos de uma string.
+     *
+     * @param value string de entrada (pode conter pontos, traços, espaços etc.)
+     * @return string contendo apenas os dígitos numéricos
+     */
+    public static String cleanCpf(String value) {
+        if (value == null) {
+            return "";
+        }
+
+        char[] digits = new char[value.length()];
+        int count = 0;
+
+        for (char c : value.toCharArray()) {
+            if (c >= '0' && c <= '9') {
+                digits[count] = c;
+                count++;
+            }
+        }
+
+        return new String(digits, 0, count);
+    }
+
+    /**
      * Valida um CPF completo com dígito verificador.
      * Verifica:
      * - Exatamente 11 dígitos numéricos
      * - Rejeita CPFs com todos os dígitos iguais
      * - Valida ambos os dígitos verificadores (módulo 11)
      *
-     * @param cpf String contendo apenas dígitos do CPF
+     * @param cpf String com o CPF (pode conter formatação; será limpo internamente)
      * @return true se o CPF é válido
      */
     public static boolean validateCpf(String cpf) {
@@ -65,8 +94,8 @@ public class Student {
             return false;
         }
 
-        // Remove caracteres não numéricos
-        cpf = cpf.replaceAll("[^0-9]", "");
+        // Remove caracteres não numéricos sem regex
+        cpf = cleanCpf(cpf);
 
         // Deve ter exatamente 11 dígitos
         if (cpf.length() != 11) {

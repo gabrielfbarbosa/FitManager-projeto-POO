@@ -7,7 +7,7 @@ import java.util.ArrayList;
 
 public class Enrollment {
 
-    private String code;
+    private int code;
     private Student student;
     private Plan plan;
     private LocalDate startDate;
@@ -17,7 +17,13 @@ public class Enrollment {
     private EnrollmentStatus status;
     private ArrayList<Payment> payments;
 
-    public Enrollment(String code, Student student, Plan plan, LocalDate startDate, int durationMonths) {
+    public Enrollment(
+        int code,
+        Student student,
+        Plan plan,
+        LocalDate startDate,
+        int durationMonths
+    ) {
         this.code = code;
         this.student = student;
         this.plan = plan;
@@ -81,7 +87,7 @@ public class Enrollment {
     // Getters
     // ========================
 
-    public String getCode() {
+    public int getCode() {
         return code;
     }
 

@@ -86,7 +86,7 @@ public class ReportsMenu {
             if (i < students.size() - 1) message += "\n";
         }
 
-        ui.showMessage(message);
+        ui.showScrollableMessage(message);
     }
 
     // ============================
@@ -121,7 +121,7 @@ public class ReportsMenu {
             if (i < enrollments.size() - 1) message += "\n\n";
         }
 
-        ui.showMessage(message);
+        ui.showScrollableMessage(message);
     }
 
     // ============================
@@ -149,6 +149,6 @@ public class ReportsMenu {
             if (i < enrollments.size() - 1) message += "\n\n";
         }
 
-        ui.showMessage(message);
+        ui.showScrollableMessage(message);
     }
 }

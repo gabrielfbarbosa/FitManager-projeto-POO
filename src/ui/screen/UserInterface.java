@@ -1,7 +1,8 @@
 package ui.screen;
 
 
-import javax.swing.JOptionPane;
+import javax.swing.*;
+import java.awt.*;
 
 /**
  * Centraliza todas as operações de entrada e saída do sistema.
@@ -65,6 +66,7 @@ public class UserInterface {
         );
     }
 
+
     /**
      * Exibe uma mensagem de erro.
      *
@@ -79,25 +81,46 @@ public class UserInterface {
         );
     }
 
+    public void showScrollableMessage(String message) {
+        JTextArea textArea = new JTextArea(message);
+        textArea.setEditable(false);
+        textArea.setLineWrap(true);
+        textArea.setWrapStyleWord(true);
+        textArea.setCaretPosition(0);
+
+        JScrollPane scrollPane = new JScrollPane(textArea);
+        scrollPane.setPreferredSize(new Dimension(500, 300));
+
+        JOptionPane.showMessageDialog(
+                null,
+                scrollPane,
+                APP_TITLE,
+                JOptionPane.INFORMATION_MESSAGE
+        );
+    }
+
 
     /**
      * Solicita e converte uma entrada inteira do usuário.
-     * Exibe mensagem de erro e retorna Integer.MIN_VALUE se a entrada for
-     * cancelada ou não numérica.
+     * Retorna Integer.MIN_VALUE se o usuário cancelar ou digitar valor não numérico.
+     * A validação é feita caractere a caractere — sem try/catch.
      *
-     * @param prompt       texto do prompt exibido
+     * @param prompt texto do prompt exibido
      * @return o valor inteiro, ou Integer.MIN_VALUE se cancelou ou inválido
      */
     public int getIntInput(String prompt) {
         String input = getInput(prompt);
-        if (input == null) return Integer.MIN_VALUE;
+        if (input == null || isNumeric(input)) {
+            return Integer.MIN_VALUE;
+        }
         return Integer.parseInt(input.trim());
     }
 
     /**
      * Solicita e converte uma entrada decimal do usuário.
-     * Aceita vírgula como separador decimal (substitui por ponto antes da conversão).
-     * Exibe mensagem de erro e retorna Double.NaN se a entrada for cancelada ou inválida.
+     * Aceita vírgula como separador decimal.
+     * Retorna Double.NaN se o usuário cancelar ou digitar valor não numérico.
+     * A validação é feita caractere a caractere — sem try/catch.
      *
      * @param prompt texto do prompt exibido
      * @return o valor decimal, ou Double.NaN se cancelou ou inválido
@@ -105,6 +128,56 @@ public class UserInterface {
     public double getDoubleInput(String prompt) {
         String input = getInput(prompt);
         if (input == null) return Double.NaN;
-        return Double.parseDouble(input.trim().replace(",", "."));
+        String normalized = input.trim().replace(",", ".");
+        if (!isDecimal(normalized)) return Double.NaN;
+        return Double.parseDouble(normalized);
+    }
+
+    /**
+     * Verifica se uma string representa um número inteiro não-negativo.
+     * Percorre caractere a caractere — sem regex e sem try/catch.
+     *
+     * @param value string a verificar
+     * @return true se contiver apenas dígitos (0-9) e não for vazia
+     */
+    public boolean isNumeric(String value) {
+        if (value == null || value.trim().isEmpty()) {
+            return true;
+        }
+        String trimmed = value.trim();
+        for (int i = 0; i < trimmed.length(); i++) {
+            char c = trimmed.charAt(i);
+            if (c < '0' || c > '9') {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Verifica se uma string representa um número decimal válido (sem sinal).
+     * Aceita dígitos e no máximo um ponto como separador decimal.
+     * Percorre caractere a caractere — sem regex e sem try/catch.
+     *
+     * @param value string já normalizada (vírgula substituída por ponto)
+     * @return true se for um decimal válido e não-vazio
+     */
+    public boolean isDecimal(String value) {
+        if (value == null || value.trim().isEmpty()) {
+            return false;
+        }
+        String trimmed = value.trim();
+        int dotCount = 0;
+        for (int i = 0; i < trimmed.length(); i++) {
+            char c = trimmed.charAt(i);
+            if (c == '.') {
+                dotCount++;
+                if (dotCount > 1) return false;
+            } else if (c < '0' || c > '9') {
+                return false;
+            }
+        }
+        // Rejeita string que é só "." sem nenhum dígito
+        return !trimmed.equals(".");
     }
 }

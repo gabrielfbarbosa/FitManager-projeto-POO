@@ -85,6 +85,10 @@ public class MainMenu {
                 running = false;
                 continue;
             }
+            if (ui.isNumeric(input)) {
+                ui.showError("Opção inválida. Digite um número de 1 a " + MainMenuOption.values().length + ".");
+                continue;
+            }
 
             MainMenuOption option = MainMenuOption.fromNumber(Integer.parseInt(input.trim()));
 

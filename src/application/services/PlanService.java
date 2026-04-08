@@ -26,8 +26,13 @@ public class PlanService {
      *
      * @return OperationResult com o Plan criado em data (se sucesso)
      */
-    public OperationResult registerPlan(String name, String description, PlanType type,
-                                         int minimumDuration, double pricePerMonth) {
+    public OperationResult registerPlan(
+        String name,
+        String description,
+        PlanType type,
+        int minimumDuration,
+        double pricePerMonth
+    ) {
         // Validação de campos obrigatórios
         if (name == null || name.trim().isEmpty()) {
             return new OperationResult(false, "O nome do plano é obrigatório.");
