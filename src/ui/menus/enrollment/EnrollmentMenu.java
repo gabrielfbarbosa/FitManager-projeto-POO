@@ -6,6 +6,7 @@ import domain.enums.PaymentType;
 import domain.model.Enrollment;
 import domain.model.Payment;
 
+import ui.screen.InputParser;
 import ui.screen.UserInterface;
 
 import java.util.ArrayList;
@@ -41,6 +42,10 @@ public class EnrollmentMenu {
             String input = ui.showMenu("> GERENCIAR MATRÍCULAS", menuOptions);
 
             if (input == null) { running = false; continue; }
+            if (!InputParser.isNumeric(input)) {
+                ui.showError("Opção inválida. Digite um número de 1 a " + EnrollmentMenuOption.values().length + ".");
+                continue;
+            }
 
             EnrollmentMenuOption option = EnrollmentMenuOption.fromNumber(Integer.parseInt(input.trim()));
 
@@ -248,6 +253,10 @@ public class EnrollmentMenu {
 
         String choice = ui.showMenu("Selecione o Tipo de Pagamento", options);
         if (choice == null) return null;
+        if (!InputParser.isNumeric(choice)) {
+            ui.showError("Tipo de pagamento inválido. Digite um número de 1 a " + types.length + ".");
+            return null;
+        }
 
         int index = Integer.parseInt(choice.trim()) - 1;
         if (index >= 0 && index < types.length) {

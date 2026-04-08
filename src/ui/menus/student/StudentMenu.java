@@ -3,6 +3,7 @@ package ui.menus.student;
 import application.FitManager;
 import application.OperationResult;
 import domain.model.Student;
+import ui.screen.InputParser;
 import ui.screen.UserInterface;
 
 
@@ -40,7 +41,7 @@ public class StudentMenu {
             String input = ui.showMenu("> GERENCIAR ALUNOS", menuOptions);
 
             if (input == null) { running = false; continue; }
-            if (ui.isNumeric(input)) {
+            if (!InputParser.isNumeric(input)) {
                 ui.showError("Opção inválida. Digite um número de 1 a " + StudentMenuOption.values().length + ".");
                 continue;
             }

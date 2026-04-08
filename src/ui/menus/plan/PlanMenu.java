@@ -5,6 +5,7 @@ import application.OperationResult;
 import domain.enums.PlanType;
 import domain.model.Plan;
 
+import ui.screen.InputParser;
 import ui.screen.UserInterface;
 
 import java.util.ArrayList;
@@ -41,7 +42,7 @@ public class PlanMenu {
             String input = ui.showMenu("> GERENCIAR PLANOS", menuOptions);
 
             if (input == null) { running = false; continue; }
-            if (ui.isNumeric(input)) {
+            if (!InputParser.isNumeric(input)) {
                 ui.showError("Opção inválida. Digite um número de 1 a " + PlanMenuOption.values().length + ".");
                 continue;
             }
@@ -109,7 +110,7 @@ public class PlanMenu {
 
         String choice = ui.showMenu("Selecione o Tipo do Plano", options);
         if (choice == null) return null;
-        if (ui.isNumeric(choice)) {
+        if (!InputParser.isNumeric(choice)) {
             ui.showError("Tipo de plano inválido. Digite um número de 1 a " + types.length + ".");
             return null;
         }

@@ -4,6 +4,7 @@ import application.FitManager;
 import ui.menus.plan.PlanMenu;
 import ui.menus.reports.ReportsMenu;
 import ui.menus.student.StudentMenu;
+import ui.screen.InputParser;
 import ui.screen.UserInterface;
 
 import ui.menus.enrollment.EnrollmentMenu;
@@ -85,7 +86,7 @@ public class MainMenu {
                 running = false;
                 continue;
             }
-            if (ui.isNumeric(input)) {
+            if (!InputParser.isNumeric(input)) {
                 ui.showError("Opção inválida. Digite um número de 1 a " + MainMenuOption.values().length + ".");
                 continue;
             }

@@ -5,6 +5,7 @@ import application.OperationResult;
 import domain.model.Enrollment;
 import domain.model.Student;
 
+import ui.screen.InputParser;
 import ui.screen.UserInterface;
 
 import java.util.ArrayList;
@@ -42,6 +43,10 @@ public class ReportsMenu {
             String input = ui.showMenu("> RELATÓRIOS", menuOptions);
 
             if (input == null) { running = false; continue; }
+            if (!InputParser.isNumeric(input)) {
+                ui.showError("Opção inválida. Digite um número de 1 a " + ReportsMenuOption.values().length + ".");
+                continue;
+            }
 
             ReportsMenuOption option = ReportsMenuOption.fromNumber(Integer.parseInt(input.trim()));
 

@@ -80,6 +80,38 @@ public class Student {
     }
 
     /**
+     * Verifica se todos os dígitos de um CPF (já limpo) são iguais.
+     * CPFs como "111.111.111-11" são estruturalmente inválidos.
+     *
+     * @param cpf string com exatamente 11 dígitos numéricos
+     * @return true se todos os dígitos forem iguais
+     */
+    private static boolean allDigitsEqual(String cpf) {
+        for (int i = 1; i < 11; i++) {
+            if (cpf.charAt(i) != cpf.charAt(0)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Calcula um dígito verificador do CPF pelo algoritmo módulo 11.
+     *
+     * @param cpf           string com exatamente 11 dígitos numéricos
+     * @param digitPosition posição do dígito a calcular: 9 para o primeiro, 10 para o segundo
+     * @return dígito verificador esperado (0–9)
+     */
+    private static int calculateVerifierDigit(String cpf, int digitPosition) {
+        int sum = 0;
+        for (int i = 0; i < digitPosition; i++) {
+            sum += Character.getNumericValue(cpf.charAt(i)) * (digitPosition + 1 - i);
+        }
+        int digit = 11 - (sum % 11);
+        return (digit >= 10) ? 0 : digit;
+    }
+
+    /**
      * Valida um CPF completo com dígito verificador.
      * Verifica:
      * - Exatamente 11 dígitos numéricos
@@ -90,56 +122,12 @@ public class Student {
      * @return true se o CPF é válido
      */
     public static boolean validateCpf(String cpf) {
-        if (cpf == null) {
-            return false;
-        }
-
-        // Remove caracteres não numéricos sem regex
+        if (cpf == null) return false;
         cpf = cleanCpf(cpf);
-
-        // Deve ter exatamente 11 dígitos
-        if (cpf.length() != 11) {
-            return false;
-        }
-
-        // Rejeita CPFs com todos os dígitos iguais
-        boolean allEqual = true;
-        for (int i = 1; i < 11; i++) {
-            if (cpf.charAt(i) != cpf.charAt(0)) {
-                allEqual = false;
-                break;
-            }
-        }
-        if (allEqual) {
-            return false;
-        }
-
-        // Validação do primeiro dígito verificador
-        int sum = 0;
-        for (int i = 0; i < 9; i++) {
-            sum += Character.getNumericValue(cpf.charAt(i)) * (10 - i);
-        }
-        int firstDigit = 11 - (sum % 11);
-        if (firstDigit >= 10) {
-            firstDigit = 0;
-        }
-        if (Character.getNumericValue(cpf.charAt(9)) != firstDigit) {
-            return false;
-        }
-
-        // Validação do segundo dígito verificador
-        sum = 0;
-        for (int i = 0; i < 10; i++) {
-            sum += Character.getNumericValue(cpf.charAt(i)) * (11 - i);
-        }
-        int secondDigit = 11 - (sum % 11);
-        if (secondDigit >= 10) {
-            secondDigit = 0;
-        }
-        if (Character.getNumericValue(cpf.charAt(10)) != secondDigit) {
-            return false;
-        }
-
+        if (cpf.length() != 11) return false;
+        if (allDigitsEqual(cpf)) return false;
+        if (Character.getNumericValue(cpf.charAt(9))  != calculateVerifierDigit(cpf, 9))  return false;
+        if (Character.getNumericValue(cpf.charAt(10)) != calculateVerifierDigit(cpf, 10)) return false;
         return true;
     }
 
