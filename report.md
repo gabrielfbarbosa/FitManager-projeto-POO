@@ -5,7 +5,7 @@
 
 ## 1. Introdução
 
-O FitManager é um sistema de gestão de academia desenvolvido em Java 17 como projeto da disciplina de Programação Orientada a Objetos. O sistema permite o gerenciamento de alunos, planos, matrículas e pagamentos por meio de uma interface interativa baseada em JOptionPane.
+O FitManager é um sistema de gestão de academia desenvolvido em Java 25 como projeto da disciplina de Programação Orientada a Objetos. O sistema permite o gerenciamento de alunos, planos, matrículas e pagamentos por meio de uma interface interativa baseada em JOptionPane.
 
 Nesta primeira etapa, foram implementadas todas as funcionalidades essenciais do sistema: cadastro e consulta de alunos e planos, realização e cancelamento de matrículas, registro de pagamentos e geração de relatórios. O foco da entrega está na construção de uma base sólida, com responsabilidades bem separadas entre camadas, regras de negócio consistentes e código preparado para evoluir nas etapas seguintes.
 
@@ -26,19 +26,32 @@ O trabalho foi realizado de forma colaborativa, sem divisão rígida por área. 
 
 O diagrama abaixo reflete o sistema conforme implementado nesta etapa. As principais diferenças em relação ao diagrama original são descritas na seção de Decisões de Projeto.
 
+![Diagrama de Classes](diagram.png)
+
 ```plantuml
 @startuml
 
-package "Interface do Usuário (UI)" {
+package "ui.screen" {
   class UserInterface {
     -APP_TITLE: String
-    +showMenu(title: String, options: MenuOption[]): String
     +showMenu(title: String, options: String): String
     +getInput(prompt: String): String
     +showMessage(msg: String): void
     +showError(msg: String): void
+    +showScrollableMessage(msg: String): void
+    +getIntInput(prompt: String): int
+    +getDoubleInput(prompt: String): double
   }
 
+  class InputParser {
+    +isNumeric(value: String): boolean {static}
+    +isDecimal(value: String): boolean {static}
+    +parseIntSafe(value: String): int {static}
+    +parseDoubleSafe(value: String): double {static}
+  }
+}
+
+package "ui.menus" {
   interface MenuOption {
     +getValorOpcao(): String
     +getNumber(): int
@@ -76,7 +89,7 @@ package "Interface do Usuário (UI)" {
   }
 }
 
-package "Aplicação" {
+package "application" {
   class FitManager {
     -studentService: StudentService
     -planService: PlanService
@@ -111,8 +124,12 @@ package "Aplicação" {
     +getData(): Object
   }
 
+  class DataMock {
+    +mock(fm: FitManager): void {static}
+  }
+
   class StudentService {
-    -students: List<Student>
+    -students: ArrayList<Student>
     +registerStudent(...): OperationResult
     +findByCpf(cpf): OperationResult
     +updateStudent(...): OperationResult
@@ -123,7 +140,7 @@ package "Aplicação" {
   }
 
   class PlanService {
-    -plans: List<Plan>
+    -plans: ArrayList<Plan>
     +registerPlan(...): OperationResult
     +findByName(name): OperationResult
     +updatePrice(...): OperationResult
@@ -133,8 +150,8 @@ package "Aplicação" {
 
   class EnrollmentService {
     -nextCode: int {static}
-    -enrollments: List<Enrollment>
-    +generateNextCode(): String {static}
+    -enrollments: ArrayList<Enrollment>
+    +generateNextCode(): int {static}
     +enroll(...): OperationResult
     +registerPayment(...): OperationResult
     +cancelEnrollment(code): OperationResult
@@ -147,7 +164,7 @@ package "Aplicação" {
   }
 }
 
-package "Domínio" {
+package "domain.model" {
   class Student {
     -name: String
     -cpf: String
@@ -159,6 +176,7 @@ package "Domínio" {
     +activate(): void
     +deactivate(): void
     +validateCpf(cpf): boolean {static}
+    +cleanCpf(value): String {static}
     +getFormattedCpf(): String
   }
 
@@ -173,7 +191,7 @@ package "Domínio" {
   }
 
   class Enrollment {
-    -code: String
+    -code: int
     -student: Student
     -plan: Plan
     -startDate: LocalDate
@@ -181,7 +199,7 @@ package "Domínio" {
     -durationMonths: int
     -totalPrice: double
     -status: EnrollmentStatus
-    -payments: List<Payment>
+    -payments: ArrayList<Payment>
     +addPayment(payment): void
     +calculateTotalPaid(): double
     +calculateBalance(): double
@@ -194,7 +212,9 @@ package "Domínio" {
     -type: PaymentType
     -description: String
   }
+}
 
+package "domain.enums" {
   enum PlanType {
     MONTHLY
     QUARTERLY
@@ -231,9 +251,12 @@ EnrollmentMenu --> UserInterface
 ReportsMenu --> FitManager
 ReportsMenu --> UserInterface
 
+UserInterface --> InputParser
+
 FitManager *-- StudentService
 FitManager *-- PlanService
 FitManager *-- EnrollmentService
+DataMock --> FitManager
 
 StudentService --> Student
 PlanService --> Plan
@@ -267,114 +290,26 @@ Esta seção documenta as principais decisões tomadas durante o desenvolvimento
 
 **Justificativa:** O JOptionPane oferece caixas de diálogo padronizadas do sistema operacional, tornando a experiência de uso mais intuitiva e menos suscetível a erros de entrada — por exemplo, o botão "Cancelar" retorna `null` de forma explícita, o que facilita o tratamento de desistência do usuário em qualquer ponto da navegação.
 
-**Impacto:** Toda a lógica de I/O está encapsulada na classe `UserInterface`, exatamente como exigido pelo documento. Migrar para terminal na etapa 2 exige alterações apenas nessa classe.
+**Impacto:** Toda a lógica de I/O está encapsulada na classe `UserInterface`, exatamente como exigido pelo documento. Migrar para terminal na etapa 2 exige alterações apenas nessa classe. A classe `UserInterface` também expõe métodos tipados (`getIntInput()` e `getDoubleInput()`) que delegam a conversão ao `InputParser`, mantendo os menus livres de qualquer lógica de parsing.
 
 ---
 
-### 4.2 Nome da classe de I/O: `UserInterface` em vez de `UserScreen`
+### 4.2 Classe auxiliar InputParser para validação de entradas numéricas
 
-**Decisão:** A classe foi renomeada de `UserScreen` (nome inicial de desenvolvimento) para `UserInterface`, alinhando com o diagrama oficial do projeto.
-
-**Impacto:** Nenhum — a renomeação foi feita antes de qualquer dependência se consolidar. O nome `UserInterface` está consistente em todo o código.
-
----
-
-### 4.3 Armazenamento do CPF sem formatação
-
-**Decisão:** O CPF é armazenado internamente apenas com dígitos (`12345678900`), sem pontos ou hífen.
+**Decisão:** Criar a classe `InputParser` (em `ui.screen`) com métodos estáticos para validar e converter entradas numéricas sem uso de `try/catch` ou regex.
 
 **Alternativas consideradas:**
-- Armazenar com formatação (`123.456.789-00`), facilitando a exibição.
-- Armazenar sem formatação e formatar apenas na exibição via `getFormattedCpf()`.
+- Usar `try/catch` em `NumberFormatException` diretamente nos menus (abordagem comum).
+- Usar regex (`Pattern.matches`) para verificar o formato antes de converter.
+- Validar caractere a caractere via loop (escolha adotada).
 
-**Justificativa:** Armazenar sem formatação simplifica todas as operações de busca e comparação — não é necessário normalizar a entrada antes de cada `equals()`. A formatação para exibição é feita pelo método `getFormattedCpf()` em `Student`, mantendo a responsabilidade de apresentação separada do dado bruto.
+**Justificativa:** A abordagem caractere a caractere é explícita, sem dependência de lançamento de exceção para controle de fluxo. Não há regex que possa ter comportamento inesperado. O `InputParser` centraliza a lógica de parsing em um único ponto — qualquer ajuste (ex: aceitar sinal negativo) é feito lá, sem tocar os menus. Os métodos retornam valores sentinela (`Integer.MIN_VALUE`, `Double.NaN`) que os menus verificam antes de usar.
 
-**Impacto:** Toda entrada de CPF recebida pela interface passa por `replaceAll("[^0-9]", "")` antes de qualquer operação. A consistência é garantida tanto nos serviços quanto no `FitManager`.
-
----
-
-### 4.4 Validação completa do CPF com dígito verificador
-
-**Decisão:** Implementar o algoritmo completo de validação do CPF, incluindo os dois dígitos verificadores pelo módulo 11.
-
-**Alternativas consideradas:**
-- Validar apenas comprimento e caracteres numéricos (mais simples, menos robusto).
-- Validação completa com dígito verificador (mais robusta).
-
-**Justificativa:** A validação básica aceitaria CPFs como `11111111111` ou `00000000000`, que são numericamente bem formados mas inválidos. O algoritmo completo rejeita esses casos e garante que apenas CPFs genuinamente válidos entrem no sistema. O método `validateCpf()` é estático em `Student`, pois a validação de formato não depende de nenhum atributo de instância.
-
-**Impacto:** Maior robustez no cadastro de alunos. CPFs com todos os dígitos iguais são explicitamente rejeitados antes do cálculo dos verificadores.
+**Impacto:** Nenhum menu contém `try/catch`. A `UserInterface` disponibiliza `getIntInput()` e `getDoubleInput()` que encapsulam completamente a lógica de conversão segura.
 
 ---
 
-### 4.5 Estratégia de remoção de alunos: inativação lógica
-
-**Decisão:** Alunos não são removidos fisicamente da lista — são marcados como inativos via `deactivate()`, que registra a data de remoção em `removedAt`.
-
-**Alternativas consideradas:**
-- Remoção física: simples, mas deixa referências inválidas nos objetos `Enrollment` que apontam para o `Student` removido.
-- Inativação lógica: o objeto continua existindo em memória com `active = false`, preservando a integridade do histórico de matrículas.
-
-**Justificativa:** A inativação preserva o histórico de matrículas sem criar referências pendentes. O atributo `removedAt` documenta quando a remoção ocorreu. As listagens de alunos filtram apenas os ativos, mantendo a visibilidade operacional correta.
-
-**Impacto:** O método `cpfExists()` em `StudentService` verifica ativos e inativos — um CPF de aluno inativo não pode ser reutilizado. Isso garante unicidade permanente do CPF no sistema.
-
----
-
-### 4.6 `totalPrice` calculado e fixado na criação da matrícula
-
-**Decisão:** O valor total da matrícula é calculado uma única vez no construtor de `Enrollment` via `plan.calculateTotalPrice(durationMonths)` e armazenado em `totalPrice`. Ele nunca é recalculado após esse ponto.
-
-**Alternativas consideradas:**
-- Calcular dinamicamente sempre que necessário, buscando o preço atual do plano.
-- Calcular e armazenar no momento da criação (escolha adotada).
-
-**Justificativa:** O contrato firmado no momento da matrícula deve refletir o preço vigente naquele instante. Alterar o preço de um plano não deve retroagir sobre contratos já existentes — isso seria uma violação do princípio de consistência histórica. A abordagem adotada garante que `Enrollment.totalPrice` seja imutável após a criação.
-
-**Impacto:** O fluxo de alteração de preço (`updatePlanPrice`) atualiza apenas o atributo `pricePerMonth` do objeto `Plan`, sem propagar nenhuma mudança para matrículas existentes. Isso é verificável: uma matrícula criada com preço R$ 100/mês mantém seu `totalPrice` mesmo após o plano ser atualizado para R$ 150/mês.
-
----
-
-### 4.7 Regra do pagamento inicial: valor positivo obrigatório
-
-**Decisão:** A matrícula só é efetivada após o registro de um pagamento inicial com valor positivo. Qualquer valor positivo é aceito — não há exigência de valor mínimo proporcional ao total.
-
-**Alternativas consideradas:**
-- Exigir pagamento de ao menos uma parcela (valor total / duração).
-- Exigir um percentual do valor total (ex: 10%).
-- Exigir qualquer valor positivo (escolha adotada).
-
-**Justificativa:** Exigir um valor mínimo específico adiciona complexidade sem justificativa clara no domínio descrito. A regra fundamental do enunciado é que a matrícula não pode existir sem ao menos um pagamento registrado. A política de parcelas pode ser definida por fora do sistema. Pagamentos parciais são permitidos explicitamente pelo documento.
-
-**Impacto:** O `FitManager` valida o valor positivo antes de delegar ao `EnrollmentService`. O `EnrollmentService` cria `Enrollment` e `Payment` inicial de forma atômica — se qualquer validação falhar, nenhum objeto entra na coleção.
-
----
-
-### 4.8 Atomicidade da criação de matrícula e pagamento inicial
-
-**Decisão:** `Enrollment` e `Payment` inicial são criados dentro de uma única chamada a `EnrollmentService.enroll()`. O objeto `Enrollment` só é adicionado à coleção após o `Payment` ter sido criado e registrado com sucesso.
-
-**Justificativa:** Evita o estado intermediário em que a matrícula existe sem nenhum pagamento — o que violaria a regra de negócio. Se a criação do `Payment` falhar (ex: tipo nulo), o `Enrollment` não é adicionado à lista e nenhum efeito colateral persiste.
-
-**Impacto:** O fluxo de matrícula coleta todos os dados — incluindo os do pagamento inicial — antes de qualquer chamada ao `FitManager`. O menu não toma nenhuma decisão após a chamada: apenas exibe o `OperationResult` recebido.
-
----
-
-### 4.9 Cancelamento como operação irreversível com retorno booleano
-
-**Decisão:** O método `cancel()` em `Enrollment` retorna `boolean` — `true` se o cancelamento foi executado, `false` se a matrícula já estava cancelada.
-
-**Alternativas consideradas:**
-- Retornar `void` e deixar a verificação de status no serviço.
-- Retornar `boolean` e verificar no objeto (escolha adotada).
-
-**Justificativa:** A regra "CANCELLED é irreversível" pertence ao objeto `Enrollment`, que conhece seu próprio estado. O retorno booleano permite que o `EnrollmentService` monte um `OperationResult` descritivo sem precisar duplicar a lógica de verificação. A transição de estado acontece no objeto; a interpretação do resultado acontece no serviço.
-
-**Impacto:** O status `CANCELLED` nunca é revertido. O `EnrollmentService.cancelEnrollment()` trata o retorno `false` retornando um `OperationResult` com mensagem `"Esta matrícula já está cancelada."`.
-
----
-
-### 4.10 Instanciação dos submenus: lazy instantiation
+### 4.3 Instanciação dos submenus: lazy instantiation
 
 **Decisão:** Os submenus (`StudentMenu`, `PlanMenu`, `EnrollmentMenu`, `ReportsMenu`) são instanciados sob demanda no `MainMenu`, apenas quando o usuário acessa a opção correspondente pela primeira vez.
 
@@ -388,44 +323,152 @@ Esta seção documenta as principais decisões tomadas durante o desenvolvimento
 
 ---
 
-### 4.11 Desconto de 10% em meses excedentes (funcionalidade extra)
+### 4.4 Armazenamento do CPF sem formatação
 
-**Decisão:** O método `calculateTotalPrice(months)` em `Plan` aplica desconto de 10% sobre os meses que excedem a duração mínima do plano.
-
-**Alternativas consideradas:**
-- Preço fixo para todos os meses (`pricePerMonth * months`).
-- Desconto progressivo por tipo de plano (usando `if (type == QUARTERLY)`).
-- Desconto sobre os meses excedentes independente do tipo (escolha adotada).
-
-**Justificativa:** A regra é simples e coerente com o domínio — contratos mais longos têm incentivo financeiro. A lógica foi colocada em `Plan.calculateTotalPrice()`, que é exatamente o ponto indicado pelo documento para esta funcionalidade. Não foi usada lógica condicional por `PlanType` — o desconto é uniforme para todos os tipos, evitando o `if/else` que o documento sinaliza como candidato a subclasse na etapa 2.
-
-**Impacto:** O `totalPrice` de qualquer matrícula com duração superior ao mínimo do plano já reflete o desconto. Por ser calculado e fixado no construtor de `Enrollment`, o desconto é parte imutável do contrato — alterações futuras na política de desconto não afetam matrículas existentes.
-
----
-
-### 4.12 Situação financeira como cálculo, não como estado
-
-**Decisão:** A situação financeira de uma matrícula (quitada, pendente, crédito) não é armazenada como atributo separado — é derivada dinamicamente por `calculateBalance()` sempre que necessária.
+**Decisão:** O CPF é armazenado internamente apenas com dígitos (`12345678900`), sem pontos ou hífen.
 
 **Alternativas consideradas:**
-- Armazenar como enum de estado (`PAID`, `PENDING`, `CREDIT`), simplificando consultas.
-- Calcular dinamicamente a partir de `totalPrice` e da lista de pagamentos (escolha adotada).
+- Armazenar com formatação (`123.456.789-00`), facilitando a exibição.
+- Armazenar sem formatação e formatar apenas na exibição via `getFormattedCpf()`.
 
-**Justificativa:** Armazenar o estado financeiro como atributo separado cria risco de inconsistência — o estado poderia ficar desatualizado se um pagamento fosse adicionado sem atualizar o enum. Como `calculateBalance()` opera sobre os dados sempre presentes em `Enrollment`, o resultado é sempre correto por definição. Um valor positivo indica saldo pendente; zero ou negativo indica quitação ou crédito.
+**Justificativa:** Armazenar sem formatação simplifica todas as operações de busca e comparação — não é necessário normalizar a entrada antes de cada `equals()`. A formatação para exibição é feita pelo método `getFormattedCpf()` em `Student`, mantendo a responsabilidade de apresentação separada do dado bruto.
 
-**Impacto:** Nenhuma operação de pagamento precisa atualizar um estado financeiro separado. O menu exibe o saldo chamando `calculateBalance()` diretamente após cada pagamento.
-
----
-
-### 4.13 Crédito: exibição informativa sem bloqueio
-
-**Decisão:** Quando o total pago supera o valor da matrícula (`calculateBalance() < 0`), o sistema exibe o crédito como informação mas não bloqueia novos pagamentos.
-
-**Justificativa:** Uma academia pode aceitar pagamentos antecipados de meses futuros ou cobranças parciais que excedam o valor original. Bloquear pagamentos quando há crédito limitaria cenários legítimos. O comportamento adotado é informativo: o saldo negativo é exibido como "crédito" nas listagens e no menu de pagamento.
+**Impacto:** Toda entrada de CPF recebida pela interface passa por `Student.cleanCpf()` antes de qualquer operação. O método estático `cleanCpf()` percorre a string caractere a caractere, sem regex. A consistência é garantida tanto nos serviços quanto no `FitManager`.
 
 ---
 
-### 4.14 Coordenação entre serviços centralizada no FitManager
+### 4.5 Validação completa do CPF com dígito verificador
+
+**Decisão:** Implementar o algoritmo completo de validação do CPF, incluindo os dois dígitos verificadores pelo módulo 11.
+
+**Alternativas consideradas:**
+- Validar apenas comprimento e caracteres numéricos (mais simples, menos robusto).
+- Validação completa com dígito verificador (mais robusta).
+
+**Justificativa:** A validação básica aceitaria CPFs como `11111111111` ou `00000000000`, que são numericamente bem formados mas inválidos. O algoritmo completo rejeita esses casos e garante que apenas CPFs genuinamente válidos entrem no sistema. O método `validateCpf()` é estático em `Student`, pois a validação de formato não depende de nenhum atributo de instância. A rejeição de CPFs com todos os dígitos iguais é feita explicitamente antes do cálculo dos verificadores.
+
+**Impacto:** Maior robustez no cadastro de alunos. A lógica é decomposta em três métodos privados (`allDigitsEqual`, `calculateVerifierDigit`, `validateCpf`), mantendo cada um com responsabilidade única.
+
+---
+
+### 4.6 Estratégia de remoção de alunos: inativação lógica
+
+**Decisão:** Alunos não são removidos fisicamente da lista — são marcados como inativos via `deactivate()`, que registra a data de remoção em `removedAt`.
+
+**Alternativas consideradas:**
+- Remoção física: simples, mas deixa referências inválidas nos objetos `Enrollment` que apontam para o `Student` removido.
+- Inativação lógica: o objeto continua existindo em memória com `active = false`, preservando a integridade do histórico de matrículas.
+
+**Justificativa:** A inativação preserva o histórico de matrículas sem criar referências pendentes. O atributo `removedAt` documenta quando a remoção ocorreu. As listagens de alunos filtram apenas os ativos, mantendo a visibilidade operacional correta.
+
+**Impacto:** O método `cpfExists()` em `StudentService` verifica ativos e inativos — um CPF de aluno inativo não pode ser reutilizado. Isso garante unicidade permanente do CPF no sistema.
+
+---
+
+### 4.7 `totalPrice` calculado e fixado na criação da matrícula
+
+**Decisão:** O valor total da matrícula é calculado uma única vez no construtor de `Enrollment` via `plan.calculateTotalPrice(durationMonths)` e armazenado em `totalPrice`. Ele nunca é recalculado após esse ponto.
+
+**Alternativas consideradas:**
+- Calcular dinamicamente sempre que necessário, buscando o preço atual do plano.
+- Calcular e armazenar no momento da criação (escolha adotada).
+
+**Justificativa:** O contrato firmado no momento da matrícula deve refletir o preço vigente naquele instante. Alterar o preço de um plano não deve retroagir sobre contratos já existentes. A abordagem garante que `Enrollment.totalPrice` seja imutável após a criação.
+
+**Impacto:** O fluxo de alteração de preço (`updatePlanPrice`) atualiza apenas o atributo `pricePerMonth` do objeto `Plan`, sem propagar nenhuma mudança para matrículas existentes.
+
+---
+
+### 4.8 Campo `data` em OperationResult: uso seletivo
+
+**Decisão:** O campo `data: Object` é utilizado em operações que retornam um objeto para uso imediato pelo menu, sem necessidade de uma segunda busca.
+
+**Casos em que `data` é utilizado:**
+- `registerStudent()` — retorna o `Student` criado para exibição imediata.
+- `findByCpf()`, `findByName()` — retornam o objeto encontrado para uso no FitManager.
+- `enrollStudent()` — retorna o `Enrollment` criado para exibição do resumo.
+- `registerPayment()` — retorna o `Enrollment` atualizado para exibição de saldo.
+- `cancelEnrollment()` — retorna o `Enrollment` cancelado para exibição do resumo financeiro.
+- `listAll*()`, `listWith*()` — retornam `ArrayList<T>` para iteração pelo menu.
+
+**Justificativa:** Evita buscas redundantes — o menu recebe o objeto já processado junto com o resultado da operação. Em etapas futuras, `Object` será substituído por `T` genérico.
+
+---
+
+### 4.9 Regra do pagamento inicial: valor positivo obrigatório
+
+**Decisão:** A matrícula só é efetivada após o registro de um pagamento inicial com valor positivo. Qualquer valor positivo é aceito — não há exigência de valor mínimo proporcional ao total.
+
+**Alternativas consideradas:**
+- Exigir pagamento de ao menos uma parcela (valor total / duração).
+- Exigir um percentual do valor total (ex: 10%).
+- Exigir qualquer valor positivo (escolha adotada).
+
+**Justificativa:** Exigir um valor mínimo específico adiciona complexidade sem justificativa clara no domínio descrito. A regra fundamental do enunciado é que a matrícula não pode existir sem ao menos um pagamento registrado.
+
+**Impacto:** O `FitManager` valida o valor positivo antes de delegar ao `EnrollmentService`. O `EnrollmentService` cria `Enrollment` e `Payment` inicial de forma atômica — se qualquer validação falhar, nenhum objeto entra na coleção.
+
+---
+
+### 4.10 Atomicidade da criação de matrícula e pagamento inicial
+
+**Decisão:** `Enrollment` e `Payment` inicial são criados dentro de uma única chamada a `EnrollmentService.enroll()`. O objeto `Enrollment` só é adicionado à coleção após o `Payment` ter sido criado e registrado com sucesso.
+
+**Justificativa:** Evita o estado intermediário em que a matrícula existe sem nenhum pagamento — o que violaria a regra de negócio. Se a criação do `Payment` falhar, o `Enrollment` não é adicionado à lista e nenhum efeito colateral persiste.
+
+**Impacto:** O fluxo de matrícula coleta todos os dados — incluindo os do pagamento inicial — antes de qualquer chamada ao `FitManager`. O menu não toma nenhuma decisão após a chamada: apenas exibe o `OperationResult` recebido.
+
+---
+
+### 4.11 Cancelamento como operação irreversível com retorno booleano
+
+**Decisão:** O método `cancel()` em `Enrollment` retorna `boolean` — `true` se o cancelamento foi executado, `false` se a matrícula já estava cancelada.
+
+**Alternativas consideradas:**
+- Retornar `void` e deixar a verificação de status no serviço.
+- Retornar `boolean` e verificar no objeto (escolha adotada).
+
+**Justificativa:** A regra "CANCELLED é irreversível" pertence ao objeto `Enrollment`, que conhece seu próprio estado. O retorno booleano permite que o `EnrollmentService` monte um `OperationResult` descritivo sem precisar duplicar a lógica de verificação. A transição de estado acontece no objeto; a interpretação do resultado acontece no serviço.
+
+**Impacto:** O status `CANCELLED` nunca é revertido. O `EnrollmentService.cancelEnrollment()` trata o retorno `false` retornando um `OperationResult` com mensagem `"Esta matrícula já está cancelada."`.
+
+---
+
+### 4.12 Código da matrícula como inteiro sequencial
+
+**Decisão:** O código da matrícula é um `int` sequencial (1, 2, 3...) gerado por `EnrollmentService.generateNextCode()`, que usa um atributo estático `nextCode`.
+
+**Alternativas consideradas:**
+- Código como `String` formatada (ex: `"M001"`).
+- Código como `int` sequencial (escolha adotada).
+
+**Justificativa:** O enunciado menciona explicitamente o uso de `static` para `nextCode` como exemplo concreto do modificador. O `int` é mais simples de comparar nas buscas e suficiente para o domínio. A busca `findByCode(int)` percorre a lista comparando diretamente os valores.
+
+**Impacto:** O `FitManager.registerPayment()` e `cancelEnrollment()` recebem `int` como código, eliminando a necessidade de parsing de string. O menu coleta o código via `getIntInput()`.
+
+---
+
+### 4.13 Responsabilidades da classe Enrollment
+
+A classe `Enrollment` concentra várias responsabilidades por ser o núcleo do domínio. Durante a implementação, avaliou-se se `calculateBalance()` ou `cancel()` estariam acumulando lógica indevida.
+
+**Conclusão:** `calculateBalance()` opera apenas sobre `totalPrice` e a lista de pagamentos internos — pertence claramente ao objeto. O método `cancel()` modifica apenas o estado interno de `Enrollment`. Nenhuma lógica foi identificada como mal alocada. O `EnrollmentService` é responsável por criar o `Payment` antes de passá-lo para `enrollment.addPayment()`, mantendo `Enrollment` como receptora passiva de pagamentos já construídos.
+
+---
+
+### 4.14 Criação do objeto Payment: responsabilidade do serviço
+
+**Decisão:** O objeto `Payment` é construído no `EnrollmentService` (via método privado `buildPayment()`) antes de ser passado para `enrollment.addPayment(payment)`.
+
+**Alternativas consideradas:**
+- Criar `Payment` dentro do próprio `Enrollment.addPayment()`.
+- Criar no serviço e passar pronto (escolha adotada).
+
+**Justificativa:** `Enrollment` deve ser receptora passiva — ela não precisa saber como um `Payment` é construído, apenas armazená-lo. O serviço centraliza a lógica de construção e pode aplicar o fallback de descrição antes de criar o objeto.
+
+---
+
+### 4.15 Coordenação entre serviços centralizada no FitManager
 
 **Decisão:** Os serviços nunca se comunicam diretamente entre si. Toda coordenação que envolve mais de um serviço é responsabilidade do `FitManager`.
 
@@ -438,11 +481,109 @@ Esta seção documenta as principais decisões tomadas durante o desenvolvimento
 
 ---
 
-### 4.15 Organização dos enums de menu em subpacotes
+### 4.16 Verificação de matrícula ativa: responsabilidade do FitManager
 
-**Decisão:** Cada menu tem seu próprio enum de opções (`MainMenuOption`, `StudentMenuOption`, etc.) dentro do mesmo subpacote do menu correspondente.
+**Decisão:** A verificação `hasActiveEnrollment()` antes de uma nova matrícula é feita pelo `FitManager` (passo 6 do Fluxo 3), não dentro de `EnrollmentService.enroll()`.
 
-**Justificativa:** Mantém a coesão entre o menu e suas opções — `PlanMenu` e `PlanMenuOption` estão no mesmo pacote `ui.menus.plan`. A interface `MenuOption` fornece o contrato comum (`getNumber()`, `getValorOpcao()`, `fromNumber()`), permitindo que `UserInterface.showMenu()` aceite qualquer enum de menu sem conhecer o tipo específico.
+**Alternativas consideradas:**
+- Verificar dentro do `EnrollmentService.enroll()`.
+- Verificar no `FitManager` antes de delegar (escolha adotada).
+
+**Justificativa:** Manter a verificação no `FitManager` simplifica o `EnrollmentService` — ele recebe parâmetros pré-validados e executa a operação sem precisar coordenar com o `StudentService`. Isso segue o princípio de que coordenação entre serviços pertence ao orquestrador.
+
+---
+
+### 4.17 Situação financeira como cálculo, não como estado
+
+**Decisão:** A situação financeira de uma matrícula (quitada, pendente, crédito) não é armazenada como atributo separado — é derivada dinamicamente por `calculateBalance()` sempre que necessária.
+
+**Alternativas consideradas:**
+- Armazenar como enum de estado (`PAID`, `PENDING`, `CREDIT`), simplificando consultas.
+- Calcular dinamicamente a partir de `totalPrice` e da lista de pagamentos (escolha adotada).
+
+**Justificativa:** Armazenar o estado financeiro como atributo separado cria risco de inconsistência — o estado poderia ficar desatualizado se um pagamento fosse adicionado sem atualizar o enum. Como `calculateBalance()` opera sobre os dados sempre presentes em `Enrollment`, o resultado é sempre correto por definição. Um valor positivo indica saldo pendente; zero ou negativo indica quitação ou crédito.
+
+---
+
+### 4.18 Crédito: exibição informativa sem bloqueio
+
+**Decisão:** Quando o total pago supera o valor da matrícula (`calculateBalance() < 0`), o sistema exibe o crédito como informação mas não bloqueia novos pagamentos.
+
+**Justificativa:** Uma academia pode aceitar pagamentos antecipados de meses futuros ou cobranças parciais que excedam o valor original. Bloquear pagamentos quando há crédito limitaria cenários legítimos. O comportamento adotado é informativo: o saldo negativo é exibido como "crédito" nas listagens e no menu de pagamento.
+
+---
+
+### 4.19 Desconto de 10% em meses excedentes (funcionalidade extra)
+
+**Decisão:** O método `calculateTotalPrice(months)` em `Plan` aplica desconto de 10% sobre os meses que excedem a duração mínima do plano.
+
+**Alternativas consideradas:**
+- Preço fixo para todos os meses (`pricePerMonth * months`).
+- Desconto progressivo por tipo de plano (usando `if (type == QUARTERLY)`).
+- Desconto sobre os meses excedentes independente do tipo (escolha adotada).
+
+**Justificativa:** A regra é simples e coerente com o domínio — contratos mais longos têm incentivo financeiro. Não foi usada lógica condicional por `PlanType` — o desconto é uniforme. Isso é intencionalmente simples: na etapa 2, quando `PlanType` der origem a subclasses de `Plan`, cada subclasse poderá sobrescrever `calculateTotalPrice()` com sua própria política de desconto.
+
+**Impacto:** O `totalPrice` de qualquer matrícula com duração superior ao mínimo do plano já reflete o desconto. Por ser calculado e fixado no construtor de `Enrollment`, o desconto é parte imutável do contrato.
+
+---
+
+### 4.20 Organização dos enums de menu em subpacotes
+
+**Decisão:** Cada menu tem seu próprio enum de opções (`MainMenuOption`, `StudentMenuOption`, etc.) dentro do mesmo subpacote do menu correspondente (ex: `ui.menus.student`).
+
+**Justificativa:** Mantém a coesão entre o menu e suas opções. A interface `MenuOption` fornece o contrato comum (`getNumber()`, `getValorOpcao()`), permitindo que `UserInterface.showMenu()` aceite qualquer enum de menu sem conhecer o tipo específico.
+
+---
+
+### 4.21 Seleção de enums pelo usuário: exibição numerada
+
+**Decisão:** Para `PlanType` e `PaymentType`, o menu exibe as opções numeradas e mapeia a escolha do usuário para o enum correspondente.
+
+**Alternativas consideradas:**
+- Aceitar a entrada como texto e converter para o enum.
+- Exibir opções numeradas e mapear para o enum (escolha adotada).
+
+**Justificativa:** Exibição numerada é mais robusta — o usuário escolhe de uma lista fixa, sem possibilidade de erro de digitação. O mapeamento numérico é feito nos menus com `switch` ou comparação direta de índice.
+
+---
+
+### 4.22 Data de término da matrícula: cálculo no construtor
+
+**Decisão:** A `endDate` é calculada no construtor de `Enrollment` usando `startDate.plusMonths(durationMonths)`.
+
+**Justificativa:** O `LocalDate.plusMonths()` da API Java é o mecanismo correto para adição de meses, respeitando variações no número de dias por mês. Calcular no construtor garante que a data esteja sempre consistente com `startDate` e `durationMonths`.
+
+---
+
+### 4.23 Inicialização com dados de teste: DataMock
+
+**Decisão:** A classe `DataMock` (em `application`) popula o sistema com dados de exemplo ao iniciar. É ativada opcionalmente a partir do `FitManagerApp`.
+
+**Justificativa:** Facilita os testes manuais durante o desenvolvimento — sem precisar cadastrar alunos e planos manualmente a cada execução. A classe cobre cenários variados: alunos ativos, inativos, matrículas ativas, canceladas e histórico com múltiplas matrículas por aluno.
+
+**Impacto:** Pode ser desativada comentando a chamada `DataMock.mock(fm)` no `FitManagerApp`. Não altera nenhuma classe de domínio ou serviço.
+
+---
+
+### 4.24 Organização em pacotes: divergência em relação ao diagrama original
+
+**Decisão:** Os menus foram organizados no pacote `ui.menus` (com subpacotes `main`, `student`, `plan`, `enrollment`, `reports`) e a classe `UserInterface` em `ui.screen`. A classe auxiliar `InputParser` também está em `ui.screen`.
+
+**Divergência em relação ao diagrama original:** O diagrama original usava `ui.menu` (sem o 's'). O pacote renomeado como `ui.menus` reflete melhor que contém múltiplos menus, além de separar claramente a camada de exibição (`ui.screen`) da camada de navegação (`ui.menus`).
+
+---
+
+### 4.25 Preparação para evolução: pontos de extensão identificados
+
+**PlanType → subclasses de Plan:**
+A classe `Plan` não contém lógica condicional baseada em `type`. O método `calculateTotalPrice()` aplica uma regra única (desconto uniforme nos excedentes). Na etapa 2, cada `PlanType` poderá se tornar uma subclasse que sobrescreve esse método com regras próprias, sem necessidade de alterar o código existente.
+
+**UserInterface → interface Java:**
+A classe `UserInterface` já expõe apenas quatro métodos de exibição e captura. Os menus referenciam `UserInterface` pelo tipo concreto, mas nunca instanciam implementações alternativas. Na etapa 2, converter `UserInterface` em interface e criar `JOptionPaneUI` ou `ConsoleUI` exige apenas ajustar os construtores dos menus.
+
+**OperationResult → tipo genérico:**
+O campo `data: Object` está projetado para ser substituído por `data: T` com genéricos na etapa 2, eliminando casts nos menus sem alterar a estrutura da classe.
 
 ---
 
@@ -466,12 +607,13 @@ Esta seção documenta as principais decisões tomadas durante o desenvolvimento
 | Alteração de preço não afeta matrículas existentes | Por design: `totalPrice` é armazenado em `Enrollment`, não calculado do plano |
 | `CANCELLED` é irreversível | `Enrollment.cancel()` — verifica status atual e retorna `false` se já cancelada |
 | Desconto de 10% em meses excedentes | `Plan.calculateTotalPrice()` |
+| Entradas numéricas inválidas não encerram o programa | `InputParser` — retorna valores sentinela; menus verificam antes de usar |
 
 ---
 
 ## 6. Funcionalidades Extras
 
-### Desconto progressivo por duração contratada
+### 6.1 Desconto progressivo por duração contratada
 
 **O que foi implementado:** O método `Plan.calculateTotalPrice(months)` aplica desconto de 10% sobre os meses que excedem a duração mínima do plano. Os meses dentro da duração mínima são cobrados pelo preço cheio.
 
@@ -481,7 +623,27 @@ Esta seção documenta as principais decisões tomadas durante o desenvolvimento
 
 **Classes criadas ou modificadas:** apenas `Plan.calculateTotalPrice()`.
 
-**Decisão de projeto:** A lógica de desconto está em `Plan`, que é o objeto responsável pelo cálculo de preço. Não foi usada lógica condicional por `PlanType` — o desconto é uniforme. Isso é intencionalmente simples: na etapa 2, quando `PlanType` der origem a subclasses de `Plan`, cada subclasse poderá sobrescrever `calculateTotalPrice()` com sua própria política de desconto, eliminando a estrutura `if/else` que existiria se o desconto fosse diferente por tipo agora.
+**Decisão de projeto:** A lógica de desconto está em `Plan`, que é o objeto responsável pelo cálculo de preço. Não foi usada lógica condicional por `PlanType`. Na etapa 2, quando `PlanType` der origem a subclasses de `Plan`, cada subclasse poderá sobrescrever `calculateTotalPrice()` com sua própria política de desconto — eliminando qualquer `if/else` que existiria se o desconto fosse diferente por tipo agora.
+
+---
+
+### 6.2 Classe InputParser para validação sem try/catch
+
+**O que foi implementado:** A classe utilitária `InputParser` centraliza a validação de entradas numéricas sem uso de `try/catch` ou regex. Os métodos `isNumeric()`, `isDecimal()`, `parseIntSafe()` e `parseDoubleSafe()` cobrem todas as necessidades de parsing dos menus.
+
+**Classes criadas:** `ui.screen.InputParser`.
+
+**Decisão de projeto:** Usar `try/catch` para controle de fluxo é uma prática que mascara a origem real do erro. A abordagem caractere a caractere deixa explícito quais caracteres são aceitos e facilita extensões futuras (ex: aceitar sinal negativo).
+
+---
+
+### 6.3 Inicialização com dados de teste: DataMock
+
+**O que foi implementado:** A classe `DataMock` popula o sistema com 7 alunos, 4 planos e 6 matrículas ao iniciar, cobrindo cenários variados para facilitar os testes manuais.
+
+**Classes criadas:** `application.DataMock`.
+
+**Decisão de projeto:** Separar os dados de teste em uma classe própria mantém o `FitManagerApp` limpo e permite desativar o mock comentando uma única linha.
 
 ---
 
@@ -503,4 +665,4 @@ O projeto tornou concreto o impacto de manter fronteiras claras entre camadas. T
 
 ---
 
-*Relatório produzido para a disciplina de Programação Orientada a Objetos — Etapa 1 | Prazo: 15 de abril*
+*Relatório produzido para a disciplina de Programação Orientada a Objetos — Etapa 1 | Prazo: 15 de abril de 2026*
